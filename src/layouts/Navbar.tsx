@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from 'react'
 import { ChevronDown, MailOpen, Menu, Search } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { Join } from '@/component/Join'
+import { SignIn } from '@/component/SignIn'
 
 const Navbar = () => {
     const [servicesOpen, setServicesOpen] = useState(false)
@@ -87,10 +89,10 @@ const Navbar = () => {
                 {/* Right: Login + Hamburger */}
                 <div className="flex items-center space-x-2">
                     {/* Login button (desktop only) */}
-                    <Button className="hidden md:flex items-center space-x-2 bg-blue-900 hover:bg-blue-950 text-white rounded-full px-6 py-2">
-                        <MailOpen size={18} />
-                        <span>Login</span>
-                    </Button>
+                    <div className="flex flex-row items-center gap-5">
+                        <SignIn />
+                        <Join />
+                    </div>
 
                     {/* Hamburger (mobile only) */}
                     <button
@@ -104,11 +106,7 @@ const Navbar = () => {
 
             {/* Mobile menu */}
             <div
-                className={`
-          md:hidden mt-4 space-y-4
-          transform transition-all duration-200 origin-top
-          ${mobileOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 h-0 overflow-hidden'}
-        `}
+                className={` md:hidden mt-4 space-y-4 transform transition-all duration-200 origin-top ${mobileOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 h-0 overflow-hidden'} `}
             >
                 {/* Nav links */}
                 <nav>
@@ -125,17 +123,8 @@ const Navbar = () => {
                                 <ChevronDown className="ml-1" size={16} />
                             </button>
                             <ul
-  className={`
-    pl-4 mt-1 flex flex-col space-y-1
-   transform transition-all duration-200 origin-top
-   ${servicesOpen
-     ? 'opacity-100 scale-100 pointer-events-auto'
-     : 'opacity-0 scale-95 pointer-events-none'
-   }
-   transition-all duration-150 origin-top
-   ${servicesOpen ? 'block' : 'hidden'}
- `}
->
+                                className={` pl-4 mt-1 flex flex-col space-y-1 transform transition-all duration-200 origin-top ${servicesOpen ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-95 pointer-events-none'} transition-all duration-150 origin-top ${servicesOpen ? 'block' : 'hidden'}`}
+                            >
                                 {serviceOptions.map((name) => (
                                     <li
                                         key={name}
@@ -175,7 +164,6 @@ const Navbar = () => {
                     className="flex w-full justify-center items-center space-x-2 bg-blue-900 hover:bg-blue-950 text-white rounded-full px-6 py-2"
                     onClick={() => setMobileOpen(false)}
                 >
-                    <MailOpen size={18} />
                     <span>Login</span>
                 </Button>
             </div>
