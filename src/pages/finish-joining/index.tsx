@@ -195,28 +195,28 @@ export default function FinishSignup() {
   }, []);
 
   // 2) Guard: if you're already onboarded, kick them out immediately
-  // useEffect(() => {
-  //   if (!token) return;
-  //   (async () => {
-  //     const res = await fetch("http://localhost:3001/users/me", {
-  //       headers: { Authorization: `Bearer ${token}` },
-  //     });
-  //     if (!res.ok) {
-  //       setValidating(false);
-  //       return;
-  //     }
-  //     const me = await res.json();
-  //     // if role is anything but "pending", redirect:
-  //     if (me.role === "client") {
-  //       router.replace("/dashboard");
-  //     } else if (me.role === "professional") {
-  //       router.replace("/dashboard/pro");
-  //     } else {
-  //       // still pending → show finish-joining
-  //       setValidating(false);
-  //     }
-  //   })();
-  // }, [token, router]);
+  useEffect(() => {
+    if (!token) return;
+    (async () => {
+      const res = await fetch("http://localhost:3001/users/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        setValidating(false);
+        return;
+      }
+      const me = await res.json();
+      // if role is anything but "pending", redirect:
+      if (me.role === "client") {
+        router.replace("/dashboard");
+      } else if (me.role === "professional") {
+        router.replace("/dashboard/pro");
+      } else {
+        // still pending → show finish-joining
+        setValidating(false);
+      }
+    })();
+  }, [token, router]);
 
   if (validating) {
     return (

@@ -1,129 +1,172 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from "react";
 import {
-    Dialog,
-    DialogTrigger,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogDescription,
-    DialogFooter,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Separator } from '@/components/ui/separator'
-import { Check } from 'lucide-react'
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import { Check } from "lucide-react";
 import { Fira_Sans } from "next/font/google";
-import { Label } from '@/components/ui/label'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { GoogleButton } from './GoogleOauthButton'
-import { useRouter } from 'next/router'
+import { GoogleButton } from "./GoogleOauthButton";
+import { useRouter } from "next/router";
 const fira = Fira_Sans({ subsets: ["latin"], weight: ["300", "400", "700"] });
 
 export function Join() {
-    const router = useRouter()
-    // ★ control the open state yourself
-    const [open, setOpen] = useState(false)
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
-    const [role, setRole] = useState<'client' | 'professional'>('client')
+  const router = useRouter();
+  // ★ control the open state yourself
+  const [open, setOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-    // ★ whenever we navigate to /finish-joining, close the dialog
-    useEffect(() => {
-        if (router.pathname === '/finish-joining') {
-            setOpen(false)
-        }
-    }, [router.pathname])
+  const handleSignUp = async () => {
+    try {
+      const res = await fetch("http://localhost:3001/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const body = await res.json();
+      const token = body.access_token.access_token;
+      if (!res.ok) throw new Error(body.message);
 
+      localStorage.setItem("dalone:token", token);
+      router.replace(`/finish-joining?token=${encodeURIComponent(token)}`);
+    } catch (error) {
+      console.error(error, " Error while authentificating !");
+    }
+  };
 
-    return (
-        <Dialog open={open} onOpenChange={(isOpen) => setOpen(isOpen)}>
-            <DialogTrigger asChild>
-                <Button onClick={() => setOpen(true)} className="hidden md:flex items-center space-x-2 bg-blue-900 hover:bg-blue-950 text-white hover:text-white rounded-full px-10 py-2" variant="outline">Join</Button>
-            </DialogTrigger>
-            <DialogContent className={`${fira.className} max-w-5xl p-0 overflow-hidden w-[900px] h-[600px] max-h-[90vh] rounded-xl`}>
-                <div className="flex h-full">
-                    {/* Left marketing panel */}
-                    <div className="hidden md:flex flex-col justify-between w-1/2 bg-[url('/assets/login-bg.png')]  /* set your image path */ bg-cover bg-centertext-white p-8">
-                        <div>
-                            <h2 className="text-4xl pt-5 font-semibold mb-6" >Success starts here</h2>
-                            <ul className="space-y-4 text-lg font-semibold pt-5">
-                                {[
-                                    'Over 700 categories',
-                                    'Quality work done faster',
-                                    'Access to talent and businesses across the globe',
-                                ].map((line) => (
-                                    <li key={line} className="flex items-start">
-                                        <Check className="mt-1 mr-2" size={20} />
-                                        {line}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                        <img
-                            src="/assets/login-illustration.png"
-                            alt=""
-                            className="rounded-b-lg mt-4 object-cover w-full"
-                        />
-                    </div>
+  // ★ whenever we navigate to /finish-joining, close the dialog
+  useEffect(() => {
+    if (router.pathname === "/finish-joining") {
+      setOpen(false);
+    }
+  }, [router.pathname]);
 
-                    {/* Right sign-in form */}
-                    <div className="flex flex-col w-full md:w-1/2 p-8 pb-4">
-                        <h1 className=' text-4xl text-blue-950 font-semibold pt-6 mb-5 self-center'> DALONE </h1>
-                        <div className="mb-">
-                            <DialogHeader>
-                                <DialogTitle className="text-2xl self-center">Create a new account</DialogTitle>
-                                <DialogDescription className="mb-6 self-center">
-                                    Aleady have an account?{' '}
-                                    <a href="/register" className="text-blue-900 pb-5 hover:underline">
-                                        Sign in
-                                    </a>
-                                </DialogDescription>
-                            </DialogHeader>
-                        </div>
+  return (
+    <Dialog open={open} onOpenChange={(isOpen) => setOpen(isOpen)}>
+      <DialogTrigger asChild>
+        <Button
+          onClick={() => setOpen(true)}
+          className="hidden md:flex items-center space-x-2 bg-blue-900 hover:bg-blue-950 text-white hover:text-white rounded-full px-10 py-2"
+          variant="outline"
+        >
+          Join
+        </Button>
+      </DialogTrigger>
+      <DialogContent
+        className={`${fira.className} max-w-5xl p-0 overflow-hidden w-[900px] h-[600px] max-h-[90vh] rounded-xl`}
+      >
+        <div className="flex h-full">
+          {/* Left marketing panel */}
+          <div className="hidden md:flex flex-col justify-between w-1/2 bg-[url('/assets/login-bg.png')]  /* set your image path */ bg-cover bg-centertext-white p-8">
+            <div>
+              <h2 className="text-4xl pt-5 font-semibold mb-6">
+                Success starts here
+              </h2>
+              <ul className="space-y-4 text-lg font-semibold pt-5">
+                {[
+                  "Over 700 categories",
+                  "Quality work done faster",
+                  "Access to talent and businesses across the globe",
+                ].map((line) => (
+                  <li key={line} className="flex items-start">
+                    <Check className="mt-1 mr-2" size={20} />
+                    {line}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <img
+              src="/assets/login-illustration.png"
+              alt=""
+              className="rounded-b-lg mt-4 object-cover w-full"
+            />
+          </div>
 
-                        <div className="mb-5">
-                            {/* Google button */}
-                            <GoogleButton />
-                        </div>
+          {/* Right sign-in form */}
+          <div className="flex flex-col w-full md:w-1/2 p-8 pb-4">
+            <h1 className=" text-4xl text-blue-950 font-semibold pt-6 mb-5 self-center">
+              {" "}
+              DALONE{" "}
+            </h1>
+            <div className="mb-">
+              <DialogHeader>
+                <DialogTitle className="text-2xl self-center">
+                  Create a new account
+                </DialogTitle>
+                <DialogDescription className="mb-6 self-center">
+                  Aleady have an account?{" "}
+                  <a
+                    href="/register"
+                    className="text-blue-900 pb-5 hover:underline"
+                  >
+                    Sign in
+                  </a>
+                </DialogDescription>
+              </DialogHeader>
+            </div>
 
-                        {/* Email separator */}
-                        <div className="flex items-center mb-4">
-                            <Separator className="flex-1" />
-                            <span className="px-2 text-sm text-gray-500">OR</span>
-                            <Separator className="flex-1" />
-                        </div>
+            <div className="mb-5">
+              {/* Google button */}
+              <GoogleButton />
+            </div>
 
-                        {/* Email / password form */}
-                        <form className="flex-1 flex flex-col" onSubmit={(e) => e.preventDefault()}>
-                            <Input
-                                type="email"
-                                placeholder="Email address"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                                className="mb-4"
-                            />
-                            <Input
-                                type="password"
-                                placeholder="Password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                                className="mb-6"
-                            />
+            {/* Email separator */}
+            <div className="flex items-center mb-4">
+              <Separator className="flex-1" />
+              <span className="px-2 text-sm text-gray-500">OR</span>
+              <Separator className="flex-1" />
+            </div>
 
-                            <DialogFooter className="flex flex-col">
-                                <Button type="submit" className="w-full py-3 mb-3 bg-blue-950 hover:bg-[#121d3a] transition-colors">
-                                    Continue with Email
-                                </Button>
-                            </DialogFooter>
-                        </form>
-                        <div className="text-xs">
-                            By joining, you agree to the Dalone Terms of Service and to occasionally receive emails from us. Please read our Privacy Policy to learn how we use your personal data
-                        </div>
-                    </div>
-                </div>
-            </DialogContent>
-        </Dialog>
-    )
+            {/* Email / password form */}
+            <form
+              className="flex-1 flex flex-col"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSignUp();
+              }}
+            >
+              <Input
+                type="email"
+                placeholder="Email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="mb-4"
+              />
+              <Input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="mb-6"
+              />
+
+              <DialogFooter className="flex flex-col">
+                <Button
+                  type="submit"
+                  className="w-full py-3 mb-3 bg-blue-950 hover:bg-[#121d3a] transition-colors"
+                >
+                  Continue with Email
+                </Button>
+              </DialogFooter>
+            </form>
+            <div className="text-xs">
+              By joining, you agree to the Dalone Terms of Service and to
+              occasionally receive emails from us. Please read our Privacy
+              Policy to learn how we use your personal data
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 }
