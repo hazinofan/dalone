@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Join } from '@/component/Join'
 import { SignIn } from '@/component/SignIn'
+import Link from 'next/link'
 
 const Navbar = () => {
     const [servicesOpen, setServicesOpen] = useState(false)
@@ -34,7 +35,7 @@ const Navbar = () => {
             <div className="px-16 mx-auto flex items-center justify-between">
                 {/* Left: Logo + Nav (hidden on mobile) */}
                 <div className="flex items-center space-x-12">
-                    <h2 className="text-2xl font-bold text-blue-950">DALONE</h2>
+                    <Link href="/" className="text-2xl font-bold text-blue-950">DALONE</Link>
 
                     <nav className="hidden md:block">
                         <ul className="flex items-center space-x-8 text-gray-600">
