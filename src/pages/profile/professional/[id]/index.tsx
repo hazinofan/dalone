@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { format } from "date-fns"
-import { Badge, Calendar as CalendarIcon, Dribbble, ExternalLink, FilePlus2, FileText, Globe, ImageIcon, Instagram, Linkedin, Loader2, MoveLeft, Pencil, Plus, PlusIcon, Share2, Star, Trash2, Twitter, Upload, UploadCloud, User, X } from "lucide-react"
+import { Badge, Calendar as CalendarIcon, Dribbble, ExternalLink, FilePlus2, FileText, Globe, ImageIcon, Instagram, LayoutDashboard, Linkedin, Loader2, MoveLeft, Pencil, Plus, PlusIcon, Share2, Star, Trash2, Twitter, Upload, UploadCloud, User, UserRoundMinus, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Calendar } from "@/components/ui/calendar"
 import {
@@ -44,6 +44,7 @@ import GigCard from '@/component/gigs'
 import { createReview, fetchReviewsForProfessional, getReviews } from '../../../../../core/services/reviews.services'
 import SocialsCrud from '@/component/socialsCrud'
 import { getProfile } from '../../../../../core/services/auth.service'
+import { checkIfFollowing, followProfessional, getFollowersCount, unfollowProfessional } from '../../../../../core/services/followers.service'
 const fira = Inter({ subsets: ["latin"], weight: ["300", "400", "700"] });
 
 const TABS = [
@@ -88,9 +89,10 @@ const Index = () => {
     const [files, setFiles] = useState<string[]>([])
     const [date, setDate] = useState<Date | undefined>(undefined)
     const [gigs, setGigs] = useState<any>([]);
-    const [workContent, setWorkContent] = useState<Works>([])
+    const [workContent, setWorkContent] = useState<any>([])
+    const [workLength, setWorkLength] = useState<any>([])
     const [isClient, setIsClient] = useState(false)
-    const [authUser, setAuthUser] = useState(false)
+    const [authUser, setAuthUser] = useState<any>(false)
     const [step, setStep] = useState(1);
     const [profile, setProfile] = useState<ProfessionalProfile | null>(null);
     const [gigsCount, setGigsCount] = useState(0);
@@ -117,7 +119,7 @@ const Index = () => {
     const [userAvatar, setUserAvatar] = useState("")
     const [isAboutDialogOpen, setIsAboutDialogOpen] = useState(false);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [selectedWork, setSelectedWork] = useState<WorkItem | null>(null);
+    const [selectedWork, setSelectedWork] = useState<any>(null);
     const { toast } = useToast()
     const [workDescription, setWorkDescription] = useState("")
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
@@ -128,7 +130,7 @@ const Index = () => {
     });
     const tabsRef = useRef<(HTMLButtonElement | null)[]>([]);
     const router = useRouter();
-    const [id, setId] = useState<string | null>(null);
+    const [id, setId] = useState<any>(null);
 
     useEffect(() => {
         if (router.isReady && typeof router.query.id === 'string') {
@@ -169,6 +171,15 @@ const Index = () => {
                 setUser(0);
             });
     }, []);
+
+    useEffect(() => {
+        if (!id) return;
+        getFollowersCount(Number(id)).then(setFollowerCount);
+        checkIfFollowing(Number(id)).then(setIsFollowing);
+
+        // Optional: check if already following
+        // fetch(`/followers/is-following/${id}`) → if you implement it later
+    }, [id]);
 
     function getTimeAgo(dateString: string): string {
         const now = new Date();
@@ -265,6 +276,7 @@ const Index = () => {
 
         getProfile()
             .then((me) => {
+                if (!me) return;
                 setAuthUser(me.id);
                 if (me.lastLogin) {
                     setLastLogin(getTimeAgo(me.lastLogin));
@@ -313,6 +325,7 @@ const Index = () => {
                 if (worksRes.ok) {
                     const works = await worksRes.json();
                     setWorksCount(Array.isArray(works) ? works.length : 0);
+                    console.log(works, 'pui bb')
                 }
             } catch (e) {
                 console.error(e);
@@ -330,6 +343,7 @@ const Index = () => {
         try {
             const response = await worksService.getByUser(id)
             setWorkContent(response)
+            setWorkLength(response.length, 'work lenght')
         } catch (error) {
             console.error(error, 'error while fetching works')
         } finally {
@@ -362,7 +376,7 @@ const Index = () => {
             setIsWorkDialogOpen(false)
 
             // update local UI state
-            setWorkContent((prev) => [...prev, created])
+            setWorkContent((prev: any) => [...prev, created])
 
             // cleanup
             form.reset()
@@ -412,6 +426,8 @@ const Index = () => {
     // 2) In your component’s state:
     const [reviews, setReviews] = useState<any[]>([]);
     const [loadingReviews, setLoadingReviews] = useState(false);
+    const [isFollowing, setIsFollowing] = useState(false);
+    const [followerCount, setFollowerCount] = useState(0);
     const [showForm, setShowForm] = useState(false);
     const [comment, setComment] = useState('');
     const [rating, setRating] = useState(5);
@@ -490,11 +506,29 @@ const Index = () => {
         : "";
 
 
-    // helpers to display arrays in a Textarea
-    const langsText = profile.languages
-        .map((l) => `${l.name} (${l.level})`)
-        .join(", ");
-    const skillsText = profile.skills.join(", ");
+    const handleFollowToggle = async () => {
+        if (!id) return;
+        const proId = Number(id);
+
+        try {
+            if (isFollowing) {
+                await unfollowProfessional(proId);
+                setFollowerCount((c) => c - 1);
+                setIsFollowing(false);
+            } else {
+                await followProfessional(proId);
+                setFollowerCount((c) => c + 1);
+                setIsFollowing(true);
+            }
+        } catch (err) {
+            console.error(err);
+            toast({
+                variant: 'destructive',
+                title: "Unauthorized !",
+                description: "You should be authentificated first !",
+            })
+        }
+    };
 
 
     return (
@@ -544,10 +578,29 @@ const Index = () => {
                                 <span className=" bg-white/20 backdrop-blur-sm rounded-full text-sm ">{profile.city},</span>
                                 <span className="px-3 bg-white/20 backdrop-blur-sm rounded-full text-sm">{profile.country}</span>
                             </div>
-                            <div className="mt-4 flex flex-row gap-3">
-                                <button className=' bg-blue-950 py-1 px-6 rounded-tr-xl rounded-bl-xl hover:rounded-sm transition-all text-white flex flex-row items-center gap-2'> <UserRoundPlus /> FOLLOW </button>
-                                <button className=' bg-blue-950 py-1 px-6 rounded-tr-xl rounded-bl-xl hover:rounded-sm transition-all text-white flex flex-row items-center gap-2'> <Mail /> GET IN TOUCH </button>
-                            </div>
+                            {Number(userId) === Number(authUser) ? (
+                                // If viewing your own profile → show dashboard
+                                <button className='bg-violet-800 mt-5 py-1 px-6 rounded-lg hover:rounded-sm transition-all text-white flex flex-row items-center gap-2'>
+                                    <LayoutDashboard /> DASHBOARD
+                                </button>
+                            ) : (
+                                // If viewing someone else's profile → show follow + contact
+                                <div className="mt-4 flex flex-row gap-3">
+                                    <button
+                                        onClick={handleFollowToggle}
+                                        className={`py-1 px-6 rounded-tr-xl rounded-bl-xl hover:rounded-sm transition-all flex flex-row items-center gap-2
+                                            ${isFollowing ? 'bg-gray-600 text-white hover:bg-red-700' : 'bg-blue-950 text-white hover:bg-blue-900'}
+                                        `}
+                                    >
+                                        {isFollowing ? <UserRoundMinus /> : <UserRoundPlus />}
+                                        {isFollowing ? 'UNFOLLOW' : 'FOLLOW'}
+                                    </button>
+                                    <button className='bg-blue-950 py-1 px-6 rounded-tr-xl rounded-bl-xl hover:rounded-sm transition-all text-white flex flex-row items-center gap-2'>
+                                        <Mail /> GET IN TOUCH
+                                    </button>
+                                </div>
+                            )}
+
                         </div>
                     </div>
 
@@ -566,12 +619,12 @@ const Index = () => {
                         <div className="flex flex-row gap-10">
                             <div className="mt-4 sm:mt-0 sm:ml-auto text-center text-2xl">
                                 <p className="text-2xl text-gray-500">Followers</p>
-                                <p className="text-3xl font-bold">2,985</p>
+                                <p className="text-3xl font-bold">{followerCount}</p>
                             </div>
                             {/* Projects */}
                             <div className="mt-4 sm:mt-0 sm:ml-auto text-center">
                                 <p className="text-2xl text-gray-500">Portfolio PRO</p>
-                                <p className="text-3xl font-bold">10</p>
+                                <p className="text-3xl font-bold">{workLength}</p>
                             </div>
                             {/* Orders */}
                             <div className="mt-4 sm:mt-0 sm:ml-auto text-center">
@@ -762,7 +815,7 @@ const Index = () => {
                                                     <Loader2 className="animate-spin h-8 w-8 text-gray-500" />
                                                 </div>
                                             ) : (
-                                                workContent?.map((work) => (
+                                                workContent?.map((work: any) => (
                                                     <DialogTrigger asChild key={work.id}>
                                                         <div
                                                             className="group cursor-pointer transition-all duration-300 hover:scale-[1.02]"
@@ -826,7 +879,7 @@ const Index = () => {
                                                             </div>
                                                             {selectedWork.imageUrl.length > 1 && (
                                                                 <div className="grid grid-cols-3 gap-2">
-                                                                    {selectedWork.imageUrl.slice(1).map((img, index) => (
+                                                                    {selectedWork.imageUrl.slice(1).map((img: any, index: any) => (
                                                                         <img
                                                                             key={index}
                                                                             src={`${API_BASE_URL}/public/${img}`}

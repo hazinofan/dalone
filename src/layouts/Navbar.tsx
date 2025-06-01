@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
+  Bell,
   ChevronDown,
   LogOut,
   Menu,
@@ -8,12 +9,13 @@ import {
   User,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { motion } from "framer-motion";
+import { X, BellOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Join } from "@/component/Join";
 import { SignIn } from "@/component/SignIn";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -25,6 +27,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { getProfile } from "../../core/services/auth.service";
 import { Inter } from "next/font/google";
+import { getMyNotifications, markNotificationAsRead } from "../../core/services/notifications.service";
 const fira = Inter({ subsets: ["latin"], weight: ["300", "400", "700"] });
 
 const Navbar = () => {
@@ -35,6 +38,10 @@ const Navbar = () => {
   const [userInfo, setUserInfo] = useState<any>(null);
   const router = useRouter();
   const [userRole, setUserRole] = useState("")
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  const unreadCount = notifications.filter(n => !n.isRead).length;
 
   const serviceOptions = ["Coiffure", "Plomberie", "Électricité", "Jardinage"];
 
@@ -81,6 +88,9 @@ const Navbar = () => {
 
   // Get user infos 
   useEffect(() => {
+    getMyNotifications()
+      .then(setNotifications)
+      .catch(console.error);
     getProfile()
       .then((me) => {
         console.log("Logged-in user:", me);
@@ -99,7 +109,18 @@ const Navbar = () => {
       });
   }, []);
 
+  function formatTimeAgo(dateString: string): string {
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffMs = now.getTime() - date.getTime();
+    const diffSec = Math.floor(diffMs / 1000);
 
+    if (diffSec < 60) return 'Just now';
+    if (diffSec < 3600) return `${Math.floor(diffSec / 60)} minute(s) ago`;
+    if (diffSec < 86400) return `${Math.floor(diffSec / 3600)} hour(s) ago`;
+    if (diffSec < 172800) return 'Yesterday';
+    return `${Math.floor(diffSec / 86400)} day(s) ago`;
+  }
 
   return (
     <header className="bg-white rounded-2xl fixed top-3 left-0 right-0 z-30 shadow px-2 py-4 mx-16">
@@ -165,6 +186,104 @@ const Navbar = () => {
           {/* Login button (desktop only) */}
           {user ? (
             <div className="flex items-center gap-4">
+              <div className="relative">
+                <button
+                  onClick={() => setShowDropdown(!showDropdown)}
+                  className="relative p-2 rounded-full hover:bg-gray-100 transition"
+                >
+                  <Bell className="w-5 h-5 text-gray-600" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 text-xs bg-red-500 text-white rounded-full px-1">
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                {showDropdown && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl z-50 border border-gray-100 overflow-hidden"
+                  >
+                    <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                      <h3 className="font-semibold text-gray-800">Notifications</h3>
+                      <button
+                        onClick={() => setShowDropdown(false)}
+                        className="text-gray-400 hover:text-gray-600 transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    <div className="max-h-80 overflow-y-auto">
+                      {notifications.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center p-6 text-center">
+                          <BellOff className="h-8 w-8 text-gray-300 mb-2" />
+                          <p className="text-gray-500 text-sm">No new notifications</p>
+                        </div>
+                      ) : (
+                        <ul className="divide-y divide-gray-100">
+                          {notifications.map((notif) => (
+                            <motion.li
+                              key={notif.id}
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{ duration: 0.2 }}
+                              onClick={async () => {
+                                await markNotificationAsRead(notif.id);
+                                setNotifications((prev) =>
+                                  prev.map(n => n.id === notif.id ? { ...n, isRead: true } : n)
+                                );
+                                setShowDropdown(false);
+                              }}
+                              className={`px-4 py-3 cursor-pointer transition-colors ${notif.isRead ? 'bg-white' : 'bg-blue-50'} hover:bg-gray-50`}
+                            >
+                              <div className="flex items-start gap-3">
+                                <div className={`mt-0.5 flex-shrink-0 h-2 w-2 rounded-full ${notif.isRead ? 'bg-transparent' : 'bg-blue-500'}`} />
+                                <div className="flex-1 min-w-0">
+                                  <p className={`text-sm ${notif.isRead ? 'text-gray-600' : 'text-gray-900 font-medium'} truncate`}>
+                                    {notif.message}
+                                  </p>
+                                  <p className="text-xs text-gray-400 mt-1">
+                                    {formatTimeAgo(notif.createdAt)}
+                                  </p>
+                                </div>
+                                {!notif.isRead && (
+                                  <span className="flex-shrink-0 bg-blue-100 text-blue-950 text-xs px-2 py-0.5 rounded-full">
+                                    New
+                                  </span>
+                                )}
+                              </div>
+                            </motion.li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+
+                    {notifications.length > 0 && (
+                      <div className="border-t border-gray-100 p-2 bg-gray-50">
+                        <button
+                          onClick={() => {
+                            // Implement mark all as read functionality
+                            notifications.forEach(async (notif) => {
+                              if (!notif.isRead) {
+                                await markNotificationAsRead(notif.id);
+                              }
+                            });
+                            setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+                          }}
+                          className="text-xs text-blue-600 hover:text-blue-800 w-full text-center py-2 transition-colors"
+                        >
+                          Mark all as read
+                        </button>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </div>
+
               {/* User info with avatar and name */}
               <div className="flex items-center gap-3 group">
                 <Avatar className="h-9 w-9 border-2 border-white shadow">
