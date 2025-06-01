@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Mail, Phone } from "lucide-react";
+import { useToast } from "@/hooks/use-toast"
 import {
   Dialog,
   DialogClose,
@@ -25,6 +26,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { CountrySelect } from "@/component/countrySelector";
+import { getProfile } from "../../../core/services/auth.service";
 
 export default function FinishSignup() {
   const router = useRouter();
@@ -34,13 +37,18 @@ export default function FinishSignup() {
   const [avatarUrl, setAvatarUrl] = useState<string>("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [userId, setUserId] = useState<number | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState("");
   const [step, setStep] = useState<number>(1);
+  const { toast } = useToast()
 
   interface ProfessionalPayload {
     name: string;
     username: string;
     avatar: string;
     description: string;
+    country: string;
+    city: string;
     occupation: string;
     otherOccupation?: string;
     skills: string[];
@@ -51,6 +59,7 @@ export default function FinishSignup() {
   interface ClientPayload {
     name: string;
     username: string;
+    country: string
     avatar: string;
     description: string;
     phoneNumber: string;
@@ -84,6 +93,9 @@ export default function FinishSignup() {
   type Language = { name: string; level: "Native" | "Fluent" | "Beginner" };
 
   const [occupation, setOccupation] = useState<string>("Hairdresser");
+  const [country, setCountry] = useState('')
+  const [userInfo, setUserInfo] = useState('')
+  const [city, setCity] = useState('')
   const [otherOccupation, setOtherOccupation] = useState<string>("");
   const [skills, setSkills] = useState<Skill[]>([""]);
   const [languages, setLanguages] = useState<Language[]>([
@@ -194,6 +206,17 @@ export default function FinishSignup() {
     else setValidating(false);
   }, []);
 
+  useEffect(() => {
+    getProfile()
+      .then((me) => {
+        console.log("Logged-in user:", me);
+        setUserInfo(me)
+      })
+      .catch((err) => {
+        console.error("Could not load profile:", err);
+      });
+  }, []);
+
   // 2) Guard: if you're already onboarded, kick them out immediately
   useEffect(() => {
     if (!token) return;
@@ -208,11 +231,10 @@ export default function FinishSignup() {
       const me = await res.json();
       // if role is anything but "pending", redirect:
       if (me.role === "client") {
-        router.replace("/dashboard");
+        router.replace(`/profile/${me.id}`);
       } else if (me.role === "professional") {
-        router.replace("/dashboard/pro");
+        router.replace(`/profile/professional/${me.id}`);
       } else {
-        // still pending → show finish-joining
         setValidating(false);
       }
     })();
@@ -249,6 +271,7 @@ export default function FinishSignup() {
           name: name,
           username,
           avatar: avatarUrl,
+          country: country,
           description,
           phoneNumber,
         };
@@ -257,13 +280,19 @@ export default function FinishSignup() {
           headers,
           body: JSON.stringify(clientPayload),
         });
-        router.replace("/dashboard");
+        router.replace(`/profile/${userInfo.id}`);
+        toast({
+          title: "Account created Successfully",
+          description: "You can Now fill missing informations and start looking for professionals !",
+        })
       } else {
         // collect everything you’ve gathered
         const payload: ProfessionalPayload = {
           name: name,
           username,
           avatar: avatarUrl,
+          country: country,
+          city: city,
           description,
           occupation,
           otherOccupation: occupation === "Other" ? otherOccupation : undefined,
@@ -278,6 +307,10 @@ export default function FinishSignup() {
           body: JSON.stringify(payload),
         });
         router.replace("/dashboard/pro");
+        toast({
+          title: "Account created Successfully",
+          description: "You can Now fill missing informations and start looking for Clients !",
+        })
       }
     } catch (error) {
       console.error(error, "error saving the user data");
@@ -310,9 +343,9 @@ export default function FinishSignup() {
   }
 
   return (
-    <div className="">
+    <div className="mt-26">
       {step === 1 && (
-        <div className="flex flex-col items-center text-center max-w-md mx-auto">
+        <div className="flex flex-col mt-40 items-center text-center max-w-md mx-auto">
           <h1 className="text-2xl mb-6">Welcome! What type of account?</h1>
           <div className="flex gap-6 justify-center mb-8">
             {(["client", "professional"] as const).map((role) => (
@@ -320,11 +353,10 @@ export default function FinishSignup() {
                 key={role}
                 onClick={() => setSelectedRole(role)}
                 className={` flex-shrink-0 border rounded-lg p-28 cursor-pointer transition
-              ${
-                selectedRole === role
-                  ? "border-2 border-blue-500 shadow-lg"
-                  : "border-gray-200 hover:shadow-md"
-              }`}
+              ${selectedRole === role
+                    ? "border-2 border-blue-500 shadow-lg"
+                    : "border-gray-200 hover:shadow-md"
+                  }`}
               >
                 <h2 className="text-xl mb-2">
                   {role === "client" ? "I am a Client" : "I am a Professional"}
@@ -353,7 +385,7 @@ export default function FinishSignup() {
 
       {step === 2 && selectedRole === "client" && (
         <>
-          <div className=" py-5 px-24 ">
+          <div className="px-24 pt-32">
             <OnboardingStepper currentStep={step} steps={clientSteps} />
             <div className=" mb-10 flex flex-row items-center justify-between">
               <div className=" max-w-xl">
@@ -407,6 +439,18 @@ export default function FinishSignup() {
                 />
               </div>
 
+              <div className="mt-8 grid grid-cols-[200px_minmax(0,1fr)] items-center gap-16">
+                <label className="text-xl font-normal">
+                  Country :
+                  <span className="text-red-600">*</span>
+                </label>
+                <CountrySelect
+                  value={country}
+                  onChange={setCountry}
+                  placeholder="Search and select country"
+                />
+              </div>
+
               {/* Avatar upload row */}
               <div className="grid grid-cols-[200px_minmax(0,1fr)] items-center gap-16">
                 <label className="text-xl font-normal">Profile Picture</label>
@@ -421,6 +465,8 @@ export default function FinishSignup() {
               <div className="grid grid-cols-[200px_minmax(0,1fr)] items-start gap-16">
                 <label className="text-xl font-normal">Description</label>
                 <Textarea
+                  cols={25}
+                  rows={8}
                   placeholder="Share a bit about your self and what are you looking for as a client!"
                   className="w-full"
                 />
@@ -439,7 +485,7 @@ export default function FinishSignup() {
       )}
       {step === 3 && selectedRole === "client" && (
         <>
-          <div className="py-5 px-24 space-y-6">
+          <div className="py-32 px-24 space-y-6">
             <OnboardingStepper currentStep={3} steps={clientSteps} />
 
             <h1 className="text-4xl text-gray-700 mb-4 font-semibold">
@@ -542,7 +588,7 @@ export default function FinishSignup() {
       )}
 
       {step === 2 && selectedRole === "professional" && (
-        <div className=" py-5 px-24 ">
+        <div className=" py-36 px-24 ">
           <OnboardingStepper currentStep={step} steps={professionalSteps} />
           <div className=" mb-10 flex flex-row items-center justify-between">
             <div className=" max-w-xl">
@@ -596,6 +642,31 @@ export default function FinishSignup() {
               />
             </div>
 
+            <div className="mt-8 grid grid-cols-[200px_minmax(0,1fr)] items-center gap-16">
+              <label className="text-xl font-normal">
+                Country :
+                <span className="text-red-600">*</span>
+              </label>
+              <CountrySelect
+                value={country}
+                onChange={setCountry}
+                placeholder="Search and select country"
+              />
+            </div>
+
+            <div className="grid grid-cols-[200px_minmax(0,1fr)] items-center gap-16">
+              <label className="text-xl font-normal">
+                City :
+                <span className="text-red-600">*</span>
+              </label>
+              <Input
+                placeholder="Florida ..."
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                className="w-full h-14"
+              />
+            </div>
+
             {/* Avatar upload row */}
             <div className="grid grid-cols-[200px_minmax(0,1fr)] items-center gap-16">
               <label className="text-xl font-normal">Profile Picture</label>
@@ -614,13 +685,14 @@ export default function FinishSignup() {
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Share a bit about your work experience!"
                 className="w-full"
+                rows={10}
               />
             </div>
           </div>
           <div className="float-end">
             <Button
               onClick={handleNextStep2}
-              disabled={!name || !username}
+              disabled={!name || !username || !country || !city}
               className="mt-6 w-36 bg-blue-950 hover:bg-blue-[#0e193d] transition-colors"
             >
               Next
@@ -630,7 +702,7 @@ export default function FinishSignup() {
       )}
 
       {step === 3 && selectedRole === "professional" && (
-        <div className="py-5 px-24 space-y-6">
+        <div className="py-36 px-24 space-y-6">
           <OnboardingStepper currentStep={3} steps={professionalSteps} />
 
           <div className="flex flex-row items-center justify-between">
@@ -844,7 +916,7 @@ export default function FinishSignup() {
       )}
 
       {step === 4 && selectedRole === "professional" && (
-        <div className="py-5 px-24 space-y-6">
+        <div className="py-32 px-24 space-y-6">
           <OnboardingStepper currentStep={4} steps={professionalSteps} />
 
           <h1 className="text-4xl text-gray-700 mb-4 font-semibold">

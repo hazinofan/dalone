@@ -5,6 +5,7 @@ import {
   Menu,
   MoreHorizontal,
   Search,
+  User,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -22,13 +23,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { getProfile } from "../../core/services/auth.service";
+import { Inter } from "next/font/google";
+const fira = Inter({ subsets: ["latin"], weight: ["300", "400", "700"] });
 
 const Navbar = () => {
   const [servicesOpen, setServicesOpen] = useState(false);
   const servicesRef = useRef<HTMLLIElement>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<any>(null);
+  const [userInfo, setUserInfo] = useState<any>(null);
   const router = useRouter();
+  const [userRole, setUserRole] = useState("")
 
   const serviceOptions = ["Coiffure", "Plomberie", "Électricité", "Jardinage"];
 
@@ -65,7 +71,7 @@ const Navbar = () => {
         localStorage.removeItem("dalone:token");
         setUser(null);
       });
-  }, []);
+  }, [router.pathname]);
 
   const handleSignOut = () => {
     localStorage.removeItem("dalone:token");
@@ -73,8 +79,30 @@ const Navbar = () => {
     router.push("/");
   };
 
+  // Get user infos 
+  useEffect(() => {
+    getProfile()
+      .then((me) => {
+        console.log("Logged-in user:", me);
+
+        // If getProfile() returned null or an object without `role`, bail out
+        if (!me || typeof me.role !== "string") {
+          console.warn("No role found on the profile object:", me);
+          return;
+        }
+
+        setUserRole(me.role.toLowerCase());
+        setUserInfo(me);
+      })
+      .catch((err) => {
+        console.error("Could not load profile:", err);
+      });
+  }, []);
+
+
+
   return (
-    <header className="bg-white rounded-2xl shadow px-6 pt-4 mx-4 my-6 md:py-4">
+    <header className="bg-white rounded-2xl fixed top-3 left-0 right-0 z-30 shadow px-2 py-4 mx-16">
       <div className="px-16 mx-auto flex items-center justify-between">
         <div className="flex items-center space-x-12">
           <Link href="/" className="text-2xl font-bold text-blue-950">
@@ -95,11 +123,10 @@ const Navbar = () => {
                   <ChevronDown className="ml-1" size={16} />
                 </button>
                 <ul
-                  className={` absolute left-0 top-full mt-2 w-40 bg-white rounded-md shadow-lg transform transition-all duration-200 origin-top ${
-                    servicesOpen
-                      ? "opacity-100 scale-100 pointer-events-auto"
-                      : "opacity-0 scale-95 pointer-events-none"
-                  }`}
+                  className={` absolute left-0 top-full mt-2 w-40 bg-white rounded-md shadow-lg transform transition-all duration-200 origin-top ${servicesOpen
+                    ? "opacity-100 scale-100 pointer-events-auto"
+                    : "opacity-0 scale-95 pointer-events-none"
+                    }`}
                 >
                   {serviceOptions.map((name) => (
                     <li
@@ -143,36 +170,39 @@ const Navbar = () => {
                 <Avatar className="h-9 w-9 border-2 border-white shadow">
                   <AvatarImage src={user.avatar} alt={user.email} />
                   <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
-                    {user.email.charAt(0).toUpperCase()}
+                    {user.email
+                      ? user.email.charAt(0).toUpperCase()
+                      : "" /* or “?” or any placeholder */
+                    }
                   </AvatarFallback>
                 </Avatar>
 
                 <div className="hidden sm:block">
                   <p className="text-sm font-medium text-gray-900">
-                    {user.email.split("@")[0]}
+                    {user.email?.split("@")[0] ?? ""}
                   </p>
                   <p className="text-xs text-gray-500 truncate max-w-[160px]">
-                    {user.email}
+                    {user.email ?? ""}
                   </p>
                 </div>
               </div>
 
               {/* Dropdown menu */}
-              <DropdownMenu>
+              <DropdownMenu >
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 w-8 p-0 text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                    className=" cursor-pointer h-8 w-8 p-0 text-gray-500 hover:text-gray-700 hover:bg-gray-100 "
                   >
                     <MoreHorizontal className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel className="font-normal">
+                  <DropdownMenuLabel className={`${fira.className}`}>
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium leading-none">
-                        {user.email.split("@")[0]}
+                        {user.email ? user.email.split("@")[0] : ""}
                       </p>
                       <p className="text-xs leading-none text-gray-500 truncate">
                         {user.email}
@@ -180,13 +210,35 @@ const Navbar = () => {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
+                  {/* Professional Profile button */}
+                  {userRole === "professional" && (
+                    <DropdownMenuItem
+                      onClick={() => { router.push(`/profile/professional/${userInfo.id}`); }}
+                      className="cursor-pointer text-md font-semibold text-blue-900 focus:text-blue-950 focus:bg-[#f1e6ff]"
+                    >
+                      <User className="mr-2 h-12 w-12" />
+                      Public Profile
+                    </DropdownMenuItem>
+                  )}
+                  {userRole === "client" && (
+                    <DropdownMenuItem
+                      onClick={() => { router.push(`/profile/professional/${userInfo.id}`); }}
+                      className="cursor-pointer text-md font-semibold text-blue-900 focus:text-blue-950 focus:bg-[#f1e6ff]"
+                    >
+                      <User className="mr-2 h-12 w-12" />
+                      My Profile
+                    </DropdownMenuItem>
+                  )}
+
+                  {/* Sign out Button */}
                   <DropdownMenuItem
                     onClick={handleSignOut}
-                    className="text-red-600 focus:text-red-700 focus:bg-red-50"
+                    className="cursor-pointer text-md font-semibold text-red-600 focus:text-red-700 focus:bg-red-50"
                   >
                     <LogOut className="mr-2 h-4 w-4" />
                     Sign out
                   </DropdownMenuItem>
+
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -209,11 +261,10 @@ const Navbar = () => {
 
       {/* Mobile menu */}
       <div
-        className={` md:hidden mt-4 space-y-4 transform transition-all duration-200 origin-top ${
-          mobileOpen
-            ? "opacity-100 scale-100"
-            : "opacity-0 scale-95 h-0 overflow-hidden"
-        } `}
+        className={` md:hidden mt-4 space-y-4 transform transition-all duration-200 origin-top ${mobileOpen
+          ? "opacity-100 scale-100"
+          : "opacity-0 scale-95 h-0 overflow-hidden"
+          } `}
       >
         {/* Nav links */}
         <nav>
@@ -230,13 +281,11 @@ const Navbar = () => {
                 <ChevronDown className="ml-1" size={16} />
               </button>
               <ul
-                className={` pl-4 mt-1 flex flex-col space-y-1 transform transition-all duration-200 origin-top ${
-                  servicesOpen
-                    ? "opacity-100 scale-100 pointer-events-auto"
-                    : "opacity-0 scale-95 pointer-events-none"
-                } transition-all duration-150 origin-top ${
-                  servicesOpen ? "block" : "hidden"
-                }`}
+                className={` pl-4 mt-1 flex flex-col space-y-1 transform transition-all duration-200 origin-top ${servicesOpen
+                  ? "opacity-100 scale-100 pointer-events-auto"
+                  : "opacity-0 scale-95 pointer-events-none"
+                  } transition-all duration-150 origin-top ${servicesOpen ? "block" : "hidden"
+                  }`}
               >
                 {serviceOptions.map((name) => (
                   <li

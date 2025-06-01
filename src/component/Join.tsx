@@ -15,6 +15,7 @@ import { Check } from "lucide-react";
 import { Fira_Sans } from "next/font/google";
 import { GoogleButton } from "./GoogleOauthButton";
 import { useRouter } from "next/router";
+import { Toaster } from "@/components/ui/toaster";
 const fira = Fira_Sans({ subsets: ["latin"], weight: ["300", "400", "700"] });
 
 export function Join() {
@@ -23,6 +24,35 @@ export function Join() {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  function handleAuthSuccess(payload: {
+    access_token: string;
+    user: { sub: number; email: string; role: string };
+    isNew: boolean;
+  }) {
+    // 1) Store JWT
+    localStorage.setItem("dalone:token", payload.access_token);
+
+    // 2) Close the Join dialog
+    setOpen(false);
+
+    const { role, sub } = payload.user;
+
+    if (role === "pending") {
+      // Newly created accounts or those needing extra info
+      router.replace(`/finish-joining?token=${encodeURIComponent(payload.access_token)}`);
+    } else if (role === "client") {
+      // Existing client user → go to their profile page
+      router.replace(`/profile/${sub}`);
+    } else if (role === "professional") {
+      // Existing professional user → go to their professional profile
+      router.replace(`/profile/professional/${sub}`);
+    } else {
+      // Fallback: if for some reason there's another role, send to a safe default
+      router.replace("/");
+    }
+  }
+
 
   const handleSignUp = async () => {
     try {
@@ -51,6 +81,7 @@ export function Join() {
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => setOpen(isOpen)}>
+      <Toaster />
       <DialogTrigger asChild>
         <Button
           onClick={() => setOpen(true)}
@@ -115,7 +146,7 @@ export function Join() {
 
             <div className="mb-5">
               {/* Google button */}
-              <GoogleButton />
+              <GoogleButton onLoginSuccess={handleAuthSuccess} />
             </div>
 
             {/* Email separator */}

@@ -2,10 +2,10 @@
 import Navbar from "@/layouts/Navbar";
 import "@/styles/globals.css";
 import type { AppProps } from "next/app";
-import { Fira_Sans } from "next/font/google";
+import { Inter } from "next/font/google";
 import Head from 'next/head'
 
-const ubuntu = Fira_Sans({
+const ubuntu = Inter({
   subsets: ["latin"],
   weight: ["300", "400", "700"],
 });
