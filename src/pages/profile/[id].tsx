@@ -19,6 +19,13 @@ import {
   UserCircle,
   Pencil,
   AlignJustify,
+  LayoutDashboard,
+  Camera,
+  FileText,
+  MapPin,
+  AtSign,
+  User,
+  Image,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/router";
@@ -27,7 +34,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { updateClientProfile } from "../../../core/services/clientProfile.service";
 import { Inter } from "next/font/google";
-const fira = Inter({ subsets: ["latin"], weight: ["300", "400", "700"] });  
+import { createConversation, findConversationBetween } from "../../../core/services/conversations.service";
+import { Select, SelectContent, SelectGroup, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CountrySelect } from "@/component/countrySelector";
+const fira = Inter({ subsets: ["latin"], weight: ["300", "400", "700"] });
 
 const Profile = () => {
   const [userInfo, setUserInfo] = useState<any>(null);
@@ -56,7 +66,7 @@ const Profile = () => {
       setLoading(false);
       return;
     }
- 
+
     getUserById(numericId)
       .then((me: any) => {
         setUserInfo(me);
@@ -72,6 +82,9 @@ const Profile = () => {
   useEffect(() => {
     getProfile()
       .then((me) => {
+        if (!me) {
+          return
+        }
         console.log("Logged-in user:", me);
         setUserRole(me.role)
       })
@@ -92,6 +105,29 @@ const Profile = () => {
       });
     }
   }, [userInfo]);
+
+  const handleStartConversation = async () => {
+    const me = await getProfile();
+    const myId = String(me?.id);
+    const rawId = router.query.id as string;
+
+    // Try to find an existing conversation (your “between” call),
+    // but DON’T navigate to its _id—just use targetId:
+    const existing = await findConversationBetween(myId, rawId);
+    if (existing) {
+      // ← DON’T do router.push(`/messages/${existing._id}`);
+      router.push(`/messages/${rawId}`);
+      return;
+    }
+
+    // Create a new conversation doc on the server:
+    await createConversation(myId, rawId);
+
+    // NOW navigate to /messages/<rawId> (the other user’s ID)
+    router.push(`/messages/${rawId}`);
+  };
+
+
 
   if (loading) {
     return (
@@ -144,7 +180,8 @@ const Profile = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {;
+    try {
+      ;
       setIsEditModalOpen(false);
       updateClientProfile(formData)
     } catch (error) {
@@ -185,10 +222,22 @@ const Profile = () => {
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-center sm:items-end sm:self-end mb-6 sm:mb-0">
-            <Button variant="outline" className="w-full sm:w-auto bg-white/90 hover:bg-white backdrop-blur-sm border-purple-300 text-purple-700 hover:text-purple-900 hover:shadow-md transition-all">
-              <Mail className="w-4 h-4 mr-2" />
-              Message
-            </Button>
+            {userRole !== "client" ? (
+              <Button
+                onClick={handleStartConversation}
+                variant="outline"
+                className="w-full sm:w-auto bg-white/90 hover:bg-white backdrop-blur-sm border-purple-300 text-purple-700 hover:text-purple-900 hover:shadow-md transition-all"
+              >
+                <Mail className="w-4 h-4 mr-2" />
+                Message
+              </Button>
+            ) : (
+              <>
+                <button className='bg-violet-800 mt-5 py-1 px-6 rounded-lg hover:rounded-sm transition-all text-white flex flex-row items-center gap-2'>
+                  <LayoutDashboard /> DASHBOARD
+                </button>
+              </>
+            )}
             <Button className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white hover:shadow-lg transition-all">
               <UserRoundPlus className="w-4 h-4 mr-2" />
               Write a review
@@ -196,70 +245,93 @@ const Profile = () => {
             {userRole === 'client' && (
               <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" className="w-full sm:w-auto bg-white/90 hover:bg-white backdrop-blur-sm border-gray-300 text-gray-700 hover:text-gray-900 hover:shadow-md transition-all">
-                    <Pencil className="w-4 h-4 mr-2" />
+                  <Button
+                    variant="outline"
+                    className="w-full sm:w-auto bg-white/90 hover:bg-white backdrop-blur-sm border-gray-300 text-gray-700 hover:text-gray-900 hover:shadow-md transition-all group"
+                  >
+                    <Pencil className="w-4 h-4 mr-2 transition-transform group-hover:rotate-12" />
                     Edit Profile
                   </Button>
                 </DialogTrigger>
-                <DialogContent className={`${fira.className} max-w-5xl pt-10 overflow-hidden w-[900px] h-[600px] max-h-[90vh] rounded-xl`}>
-                  <DialogHeader>
-                    <DialogTitle className="text-2xl">Edit Profile</DialogTitle>
+                <DialogContent className={`${fira.className} max-w-4xl pt-6 pb-8 overflow-hidden sm:rounded-2xl border-0 shadow-xl`}>
+                  <div className="absolute inset-0 bg-gradient-to-br from-white to-gray-50 -z-10" />
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,_var(--tw-gradient-stops))] from-blue-50/50 to-transparent -z-10" />
+
+                  <DialogHeader className="px-6 pt-4">
+                    <DialogTitle className="text-2xl font-semibold text-gray-800 flex items-center gap-2">
+                      <Pencil className="w-5 h-5 text-blue-500" />
+                      Edit Profile
+                    </DialogTitle>
                   </DialogHeader>
-                  <form onSubmit={handleSubmit} className="flex flex-col gap-4 py-4">
-                    <div className="flex flex-row items-center gap-8">
-                      <Label htmlFor="name" className="text-right">
-                        Name 
-                      </Label>
-                      <Input
-                        id="name"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleInputChange}
-                        className="w-full"
-                      />
+
+                  <form onSubmit={handleSubmit} className="flex flex-col gap-5 px-6 pb-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      {/* Name Field */}
+                      <div className="space-y-1.5">
+                        <Label htmlFor="name" className="text-gray-600 flex items-center gap-1">
+                          <User className="w-4 h-4" />
+                          Full Name
+                        </Label>
+                        <Input
+                          id="name"
+                          name="name"
+                          value={formData.name}
+                          onChange={handleInputChange}
+                          className="border-gray-300 hover:border-gray-400 focus:border-blue-400 focus:ring-1 focus:ring-blue-200 transition"
+                          placeholder="John Doe"
+                        />
+                      </div>
+
+                      {/* Username Field */}
+                      <div className="space-y-1.5">
+                        <Label htmlFor="username" className="text-gray-600 flex items-center gap-1">
+                          <AtSign className="w-4 h-4" />
+                          Username
+                        </Label>
+                        <Input
+                          id="username"
+                          name="username"
+                          value={formData.username}
+                          onChange={handleInputChange}
+                          className="border-gray-300 hover:border-gray-400 focus:border-blue-400 focus:ring-1 focus:ring-blue-200 transition"
+                          placeholder="@johndoe"
+                        />
+                      </div>
+
+                      {/* Phone Field */}
+                      <div className="space-y-1.5">
+                        <Label htmlFor="phoneNumber" className="text-gray-600 flex items-center gap-1">
+                          <Phone className="w-4 h-4" />
+                          Phone Number
+                        </Label>
+                        <Input
+                          id="phoneNumber"
+                          name="phoneNumber"
+                          value={formData.phoneNumber}
+                          onChange={handleInputChange}
+                          className="border-gray-300 hover:border-gray-400 focus:border-blue-400 focus:ring-1 focus:ring-blue-200 transition"
+                          placeholder="+1 (555) 123-4567"
+                        />
+                      </div>
+
+                      {/* Country Field */}
+                      <div className="space-y-1.5">
+                        <Label htmlFor="country" className="text-gray-600 flex items-center gap-1">
+                          <MapPin className="w-4 h-4" />
+                          Country
+                        </Label>
+                        <CountrySelect
+                          value={formData.country}
+                          onChange={handleInputChange}
+                          placeholder="Search and select country"
+                        />
+                      </div>
                     </div>
 
-                    <div className="flex flex-row items-center gap-8">
-                      <Label htmlFor="username" className="text-right">
-                        Username
-                      </Label>
-                      <Input
-                        id="username"
-                        name="username"
-                        value={formData.username}
-                        onChange={handleInputChange}
-                        className="w-full"
-                      />
-                    </div>
-
-                    <div className="flex flex-row items-center gap-8">
-                      <Label htmlFor="phoneNumber" className="text-right">
-                        Phone
-                      </Label>
-                      <Input
-                        id="phoneNumber"
-                        name="phoneNumber"
-                        value={formData.phoneNumber}
-                        onChange={handleInputChange}
-                        className="w-full"
-                      />
-                    </div>
-
-                    <div className="flex flex-row items-center gap-8">
-                      <Label htmlFor="country" className="text-right">
-                        Country
-                      </Label>
-                      <Input
-                        id="country"
-                        name="country"
-                        value={formData.country}
-                        onChange={handleInputChange}
-                        className="w-full"
-                      />
-                    </div>
-
-                    <div className="flex flex-row items-center gap-8">
-                      <Label htmlFor="description" className="text-right">
+                    {/* About Field */}
+                    <div className="space-y-1.5">
+                      <Label htmlFor="description" className="text-gray-600 flex items-center gap-1">
+                        <FileText className="w-4 h-4" />
                         About
                       </Label>
                       <Textarea
@@ -267,20 +339,56 @@ const Profile = () => {
                         name="description"
                         value={formData.description}
                         onChange={handleInputChange}
-                        className="w-full"
-                        rows={4}
+                        className="border-gray-300 hover:border-gray-400 focus:border-blue-400 focus:ring-1 focus:ring-blue-200 transition min-h-[120px]"
+                        placeholder="Tell us about yourself..."
                       />
                     </div>
 
-                    <div className="flex justify-end gap-3 mt-4">
+                    {/* Avatar Upload */}
+                    <div className="space-y-1.5">
+                      <Label className="text-gray-600 flex items-center gap-1">
+                        <Image className="w-4 h-4" />
+                        Profile Picture
+                      </Label>
+                      <div className="flex items-center gap-4">
+                        <div className="relative h-16 w-16 rounded-full border-2 border-white shadow-sm overflow-hidden">
+                          <img
+                            src={formData.avatar || "/default-avatar.jpg"}
+                            alt="Profile"
+                            className="h-full w-full object-cover"
+                          />
+                          <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition">
+                            <Camera className="w-5 h-5 text-white" />
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="border-gray-300 text-gray-600 hover:bg-gray-50"
+                          onClick={() => document.getElementById('avatar-upload')?.click()}
+                        >
+                          Change Photo
+                        </Button>
+                        <input type="file" id="avatar-upload" className="hidden" accept="image/*" />
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex justify-end gap-3 pt-4">
                       <Button
                         type="button"
                         variant="outline"
                         onClick={() => setIsEditModalOpen(false)}
+                        className="border-gray-300 text-gray-600 hover:bg-gray-50 hover:text-gray-700"
                       >
                         Cancel
                       </Button>
-                      <Button type="submit">Save Changes</Button>
+                      <Button
+                        type="submit"
+                        className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-sm hover:shadow-md transition-all"
+                      >
+                        Save Changes
+                      </Button>
                     </div>
                   </form>
                 </DialogContent>

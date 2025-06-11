@@ -569,7 +569,7 @@ const Index = () => {
                                             <Loader2 className="animate-spin h-8 w-8 text-gray-500" />
                                         </div>
                                     ) : (
-                                        workContent?.map((work) => (
+                                        workContent?.map((work:any) => (
                                             <div key={work.id} className="max-w-full">
                                                 <img
                                                     src={`${API_BASE_URL}/public/${work.imageUrl[0]}`} // Add a fallback image

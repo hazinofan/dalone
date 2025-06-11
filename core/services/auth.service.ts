@@ -110,6 +110,15 @@ export const getUserById = async (userId: number): Promise<UserProfile> => {
   return res.json();
 };
 
+export const findAll = async () => {
+  const res = await fetch(`${API_BASE}/professional-profile`)
+  if(!res.ok) {
+    throw new Error(`Failed to fetch the users from the database ${res.statusText}` )
+  }
+  return res.json()
+}
+
+
 // ——————————————————————————————
 // 5) Update a user (protected?)
 // PATCH /users/:id

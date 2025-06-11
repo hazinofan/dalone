@@ -184,6 +184,15 @@ export default function FinishSignup() {
       body: JSON.stringify({ role: selectedRole }),
     });
 
+    const refreshRes = await fetch("http://localhost:3001/auth/refresh-token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+
     // 2) advance to step 2
     setStep(2);
   };
@@ -465,6 +474,8 @@ export default function FinishSignup() {
               <div className="grid grid-cols-[200px_minmax(0,1fr)] items-start gap-16">
                 <label className="text-xl font-normal">Description</label>
                 <Textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
                   cols={25}
                   rows={8}
                   placeholder="Share a bit about your self and what are you looking for as a client!"

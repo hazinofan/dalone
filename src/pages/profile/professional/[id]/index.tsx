@@ -45,6 +45,9 @@ import { createReview, fetchReviewsForProfessional, getReviews } from '../../../
 import SocialsCrud from '@/component/socialsCrud'
 import { getProfile } from '../../../../../core/services/auth.service'
 import { checkIfFollowing, followProfessional, getFollowersCount, unfollowProfessional } from '../../../../../core/services/followers.service'
+import { createConversation, findConversationBetween } from '../../../../../core/services/conversations.service'
+import Link from 'next/link'
+import { HorizontalTimeline } from '@/component/Availabiility'
 const fira = Inter({ subsets: ["latin"], weight: ["300", "400", "700"] });
 
 const TABS = [
@@ -52,7 +55,7 @@ const TABS = [
     { id: 'services', label: 'Services' },
     { id: 'reviews', label: 'Reviews' },
     { id: 'about', label: 'User Infos ' },
-    { id: 'socials', label: 'Socials' },
+    { id: 'availability', label: 'Availability' },
 ]
 
 interface Works {
@@ -100,6 +103,7 @@ const Index = () => {
     const [worksCount, setWorksCount] = useState(0);
     const [loading, setLoading] = useState(true);
     const { query } = useRouter();
+    const [selectedSlot, setSelectedSlot] = useState<{ day: string; time: string } | null>(null);
     const userId = Array.isArray(query.id) ? query.id[0] : query.id;
     const [formData, setFormData] = useState<any>({
         title: "",
@@ -131,6 +135,7 @@ const Index = () => {
     const tabsRef = useRef<(HTMLButtonElement | null)[]>([]);
     const router = useRouter();
     const [id, setId] = useState<any>(null);
+
 
     useEffect(() => {
         if (router.isReady && typeof router.query.id === 'string') {
@@ -175,7 +180,9 @@ const Index = () => {
     useEffect(() => {
         if (!id) return;
         getFollowersCount(Number(id)).then(setFollowerCount);
-        checkIfFollowing(Number(id)).then(setIsFollowing);
+        if (authUser) {
+            checkIfFollowing(Number(id)).then(setIsFollowing);
+        }
 
         // Optional: check if already following
         // fetch(`/followers/is-following/${id}`) → if you implement it later
@@ -343,7 +350,7 @@ const Index = () => {
         try {
             const response = await worksService.getByUser(id)
             setWorkContent(response)
-            setWorkLength(response.length, 'work lenght')
+            setWorkLength(response.length)
         } catch (error) {
             console.error(error, 'error while fetching works')
         } finally {
@@ -530,6 +537,27 @@ const Index = () => {
         }
     };
 
+    const handleStartConversation = async () => {
+        const me = await getProfile();
+        const myId = String(me?.id);
+        const rawId = router.query.id as string;
+
+        // Try to find an existing conversation (your “between” call),
+        // but DON’T navigate to its _id—just use targetId:
+        const existing = await findConversationBetween(myId, rawId);
+        if (existing) {
+            // ← DON’T do router.push(`/messages/${existing._id}`);
+            router.push(`/messages/${rawId}`);
+            return;
+        }
+
+        // Create a new conversation doc on the server:
+        await createConversation(myId, rawId);
+
+        // NOW navigate to /messages/<rawId> (the other user’s ID)
+        router.push(`/messages/${rawId}`);
+    };
+
 
     return (
         <div className="relative">
@@ -595,7 +623,7 @@ const Index = () => {
                                         {isFollowing ? <UserRoundMinus /> : <UserRoundPlus />}
                                         {isFollowing ? 'UNFOLLOW' : 'FOLLOW'}
                                     </button>
-                                    <button className='bg-blue-950 py-1 px-6 rounded-tr-xl rounded-bl-xl hover:rounded-sm transition-all text-white flex flex-row items-center gap-2'>
+                                    <button onClick={handleStartConversation} className='bg-blue-950 py-1 px-6 rounded-tr-xl rounded-bl-xl hover:rounded-sm transition-all text-white flex flex-row items-center gap-2'>
                                         <Mail /> GET IN TOUCH
                                     </button>
                                 </div>
@@ -1399,7 +1427,7 @@ const Index = () => {
                                     {/* Contact Section */}
                                     <div className="space-y-3">
                                         <h2 className="text-lg font-semibold text-gray-800 border-b pb-2 mb-8">Contact</h2>
-                                        Contact this professional by sending a direct message : <span className='text-blue-700 underline hover:text-blue-950 transition-colors cursor-pointer'> Contact Now </span>
+                                        Contact this professional by sending a direct message : <Link href={`/messages/${id}`} className='text-blue-700 underline hover:text-blue-950 transition-colors cursor-pointer'> Contact Now </Link>
                                     </div>
                                 </div>
                             </div>
@@ -1504,9 +1532,8 @@ const Index = () => {
                             </Dialog>
                         </>
                     )}
-                    {activeTab === 'socials' && id && (
-                        // passing userId ⇒ read-only
-                        <SocialsCrud userId={Number(id)} />
+                    {activeTab === 'availability' && id && (
+                        <HorizontalTimeline />
                     )}
                 </div>
             </div>

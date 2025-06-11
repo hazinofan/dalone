@@ -20,7 +20,11 @@ import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 const fira = Fira_Sans({ subsets: ["latin"], weight: ["300", "400", "700"] });
 
-export function SignIn() {
+interface SignInProps {
+  className?: string;
+}
+
+export function SignIn({ className }: SignInProps) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const { toast } = useToast()

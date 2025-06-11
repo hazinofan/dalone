@@ -7,7 +7,7 @@ import Head from 'next/head'
 
 const ubuntu = Inter({
   subsets: ["latin"],
-  weight: ["300", "400", "700"],
+  weight: ["500", "700"],
 });
 
 export default function App({ Component, pageProps }: AppProps) {

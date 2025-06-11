@@ -18,7 +18,12 @@ import { useRouter } from "next/router";
 import { Toaster } from "@/components/ui/toaster";
 const fira = Fira_Sans({ subsets: ["latin"], weight: ["300", "400", "700"] });
 
-export function Join() {
+interface JoiningProps {
+  className?: string;
+}
+
+
+export function Join({ className }: JoiningProps) {
   const router = useRouter();
   // ★ control the open state yourself
   const [open, setOpen] = useState(false);
@@ -54,23 +59,23 @@ export function Join() {
   }
 
 
-  const handleSignUp = async () => {
-    try {
-      const res = await fetch("http://localhost:3001/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      const body = await res.json();
-      const token = body.access_token.access_token;
-      if (!res.ok) throw new Error(body.message);
+    const handleSignUp = async () => {
+      try {
+        const res = await fetch("http://localhost:3001/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+        const body = await res.json();
+        const token = body.access_token.access_token;
+        if (!res.ok) throw new Error(body.message);
 
-      localStorage.setItem("dalone:token", token);
-      router.replace(`/finish-joining?token=${encodeURIComponent(token)}`);
-    } catch (error) {
-      console.error(error, " Error while authentificating !");
-    }
-  };
+        localStorage.setItem("dalone:token", token);
+        router.replace(`/finish-joining?token=${encodeURIComponent(token)}`);
+      } catch (error) {
+        console.error(error, " Error while authentificating !");
+      }
+    };
 
   // ★ whenever we navigate to /finish-joining, close the dialog
   useEffect(() => {

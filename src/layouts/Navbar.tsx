@@ -1,9 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Bell,
   ChevronDown,
   LogOut,
   Menu,
+  MessageSquareDot,
   MoreHorizontal,
   Search,
   User,
@@ -25,7 +26,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { getProfile } from "../../core/services/auth.service";
+import { getProfile, getUserById } from "../../core/services/auth.service";
 import { Inter } from "next/font/google";
 import { getMyNotifications, markNotificationAsRead } from "../../core/services/notifications.service";
 const fira = Inter({ subsets: ["latin"], weight: ["300", "400", "700"] });
@@ -34,16 +35,58 @@ const Navbar = () => {
   const [servicesOpen, setServicesOpen] = useState(false);
   const servicesRef = useRef<HTMLLIElement>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+
   const [user, setUser] = useState<any>(null);
   const [userInfo, setUserInfo] = useState<any>(null);
   const router = useRouter();
   const [userRole, setUserRole] = useState("")
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
-
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
   const serviceOptions = ["Coiffure", "Plomberie", "Électricité", "Jardinage"];
+
+  const loadCurrentUser = useCallback(async () => {
+    const token = localStorage.getItem("dalone:token");
+    if (!token) {
+      setUser(null);
+      return;
+    }
+    try {
+      // 1) Get “me” (to know user.id and user.role)
+      const meRes = await fetch("http://localhost:3001/users/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!meRes.ok) throw new Error("Not authenticated");
+      const me = await meRes.json();
+
+      // 2) Fetch full user payload (with clientProfile / professionalProfile)
+      const fullUser = await getUserById(me.id);
+      setUser(fullUser);
+
+      // 3) Also store the role in lowercase for convenience
+      setUserRole(me.role.toLowerCase());
+      setUserInfo(me);
+    } catch (err) {
+      console.warn("Failed to load user:", err);
+      localStorage.removeItem("dalone:token");
+      setUser(null);
+    }
+  }, []);
+
+  // On mount (and every time the route changes), re‐load the user:
+  useEffect(() => {
+    loadCurrentUser();
+  }, [router.pathname, loadCurrentUser]);
+
+  // ALSO listen for our custom “user‐logged‐in” event so we can re‐load immediately
+  useEffect(() => {
+    window.addEventListener("user‐logged‐in", loadCurrentUser);
+    return () => {
+      window.removeEventListener("user‐logged‐in", loadCurrentUser);
+    };
+  }, [loadCurrentUser]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -69,9 +112,10 @@ const Navbar = () => {
         if (!res.ok) throw new Error("Not authenticated");
         return res.json();
       })
-      .then((me) => {
-        console.log("User info:", me);
-        setUser(me);
+      .then(async (me) => {
+        const res = await getUserById(me.id)
+        console.log("User info:", res);
+        setUser(res);
       })
       .catch((err) => {
         console.warn("Failed to load user:", err);
@@ -232,10 +276,18 @@ const Navbar = () => {
                               animate={{ opacity: 1 }}
                               transition={{ duration: 0.2 }}
                               onClick={async () => {
+                                // 1) Mark this notification as read
                                 await markNotificationAsRead(notif.id);
-                                setNotifications((prev) =>
-                                  prev.map(n => n.id === notif.id ? { ...n, isRead: true } : n)
+                                setNotifications(prev =>
+                                  prev.map(n => (n.id === notif.id ? { ...n, isRead: true } : n))
                                 );
+
+                                // 2) If it's a "message" notification, navigate to /messages
+                                if (notif.type === 'message') {
+                                  router.push('/messages');
+                                }
+
+                                // 3) Close dropdown in any case
                                 setShowDropdown(false);
                               }}
                               className={`px-4 py-3 cursor-pointer transition-colors ${notif.isRead ? 'bg-white' : 'bg-blue-50'} hover:bg-gray-50`}
@@ -287,7 +339,7 @@ const Navbar = () => {
               {/* User info with avatar and name */}
               <div className="flex items-center gap-3 group">
                 <Avatar className="h-9 w-9 border-2 border-white shadow">
-                  <AvatarImage src={user.avatar} alt={user.email} />
+                  <AvatarImage src={`${API_BASE_URL}/public/${user.avatar}`} alt={user.email} />
                   <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
                     {user.email
                       ? user.email.charAt(0).toUpperCase()
@@ -298,7 +350,9 @@ const Navbar = () => {
 
                 <div className="hidden sm:block">
                   <p className="text-sm font-medium text-gray-900">
-                    {user.email?.split("@")[0] ?? ""}
+                    {user.role === "client"
+                      ? user.clientProfile?.username ?? ""
+                      : user.professionalProfile?.username ?? ""}
                   </p>
                   <p className="text-xs text-gray-500 truncate max-w-[160px]">
                     {user.email ?? ""}
@@ -341,13 +395,21 @@ const Navbar = () => {
                   )}
                   {userRole === "client" && (
                     <DropdownMenuItem
-                      onClick={() => { router.push(`/profile/professional/${userInfo.id}`); }}
+                      onClick={() => { router.push(`/profile/${userInfo.id}`); }}
                       className="cursor-pointer text-md font-semibold text-blue-900 focus:text-blue-950 focus:bg-[#f1e6ff]"
                     >
                       <User className="mr-2 h-12 w-12" />
                       My Profile
                     </DropdownMenuItem>
                   )}
+
+                  <DropdownMenuItem
+                    onClick={() => { router.push(`/messages`); }}
+                    className="cursor-pointer text-md font-semibold text-blue-900 focus:text-blue-950 focus:bg-[#f1e6ff]"
+                  >
+                    <MessageSquareDot className="mr-2 h-12 w-12" />
+                    Inbox
+                  </DropdownMenuItem>
 
                   {/* Sign out Button */}
                   <DropdownMenuItem
