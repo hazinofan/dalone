@@ -302,7 +302,7 @@ export default function ChatPage() {
     async function getUser() {
       setLoading(true);
       try {
-        const res = await getUserById(recipientId);
+        const res = await getUserById(Number(recipientId));
         setReceipientUser(res);
       } catch (error) {
         console.error(error);
