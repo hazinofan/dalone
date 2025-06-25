@@ -120,6 +120,7 @@ const getPlatformIcon = (platform: string) => {
 
 
 type Project = {
+    img: string;
     imageUrl: string[]
     title: string
     date: string
@@ -278,21 +279,6 @@ const Index = () => {
         setHasSocials(socialLinks.length > 0);
         setIsSocialsDialogOpen(false);
     };
-
-    const [projects, setProjects] = useState<Project[]>([
-        {
-            img: 'https://usercontent.one/wp/.../richard_roelofse_fashion_designer.jpg',
-            title: 'Runners Roma',
-            date: '25/05/2022',
-            category: 'Modeling',
-        },
-        {
-            img: 'https://wwd.com/.../Adriana-Lima-HED.jpg?w=1024',
-            title: 'Met Gala Prematch',
-            date: '05/12/2024',
-            category: 'Modeling',
-        },
-    ])
 
 
     const cardsData = [
