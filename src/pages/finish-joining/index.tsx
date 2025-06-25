@@ -27,7 +27,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { CountrySelect } from "@/component/countrySelector";
-import { getProfile } from "../../../core/services/auth.service";
+import { getProfile, UserProfile } from "../../../core/services/auth.service";
 
 export default function FinishSignup() {
   const router = useRouter();
@@ -94,7 +94,7 @@ export default function FinishSignup() {
 
   const [occupation, setOccupation] = useState<string>("Hairdresser");
   const [country, setCountry] = useState('')
-  const [userInfo, setUserInfo] = useState('')
+  const [userInfo, setUserInfo] = useState<UserProfile | null>(null)
   const [city, setCity] = useState('')
   const [otherOccupation, setOtherOccupation] = useState<string>("");
   const [skills, setSkills] = useState<Skill[]>([""]);
