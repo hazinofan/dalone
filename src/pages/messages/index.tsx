@@ -44,7 +44,7 @@ export default function ConversationsListPage() {
           list.map(async (conv) => {
             let userInfo = null;
             try {   
-              userInfo = await getUserById(conv.otherUserId);
+              userInfo = await getUserById(Number(conv.otherUserId));
             } catch {
               // ignore fetch errors
             }
