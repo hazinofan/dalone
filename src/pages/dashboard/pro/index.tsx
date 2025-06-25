@@ -133,7 +133,7 @@ const Index = () => {
     const [loadingData, setLoadingData] = useState(false)
     const [files, setFiles] = useState<string[]>([])
     const [date, setDate] = useState<Date | undefined>(undefined)
-    const [workContent, setWorkContent] = useState([])
+    const [workContent, setWorkContent] = useState<Work[]>([]);
     const [reviewPost, setReviewPost] = useState(false)
     const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({})
     const [variablePricing, setVariablePricing] = useState(false)
@@ -443,7 +443,7 @@ const Index = () => {
                 <div className="mt-6">
                     {activeTab === 'work' && (
                         <>
-                            <div className="flex flex-row gap-10 w-full" style={{ width: '100%'}}>
+                            <div className="flex flex-row gap-10 w-full" style={{ width: '100%' }}>
                                 <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
                                     {/* Add New Card (kept the same) */}
                                     <Dialog open={isWorkDialogOpen} onOpenChange={setIsWorkDialogOpen}>
@@ -569,7 +569,7 @@ const Index = () => {
                                             <Loader2 className="animate-spin h-8 w-8 text-gray-500" />
                                         </div>
                                     ) : (
-                                        workContent?.map((work:any) => (
+                                        workContent?.map((work: any) => (
                                             <div key={work.id} className="max-w-full">
                                                 <img
                                                     src={`${API_BASE_URL}/public/${work.imageUrl[0]}`} // Add a fallback image
