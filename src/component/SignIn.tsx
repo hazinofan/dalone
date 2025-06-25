@@ -91,7 +91,7 @@ export function SignIn({ className }: SignInProps) {
       console.error(err);
       toast({
         title: "Error while authentificating !",
-        description: { err },
+        description: String(err),
       })
     }
   };
