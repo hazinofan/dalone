@@ -138,7 +138,7 @@ export default function ChatPage() {
         const enriched = await Promise.all(
           list.map(async (conv) => {
             try {
-              const userInfo = await getUserById(conv.otherUserId);
+              const userInfo = await getUserById(Number(conv.otherUserId));
               return { ...conv, userInfo };
             } catch {
               return { ...conv, userInfo: null };
@@ -176,7 +176,7 @@ export default function ChatPage() {
               const enriched = await Promise.all(
                 list.map(async (conv) => {
                   try {
-                    const userInfo = await getUserById(conv.otherUserId);
+                    const userInfo = await getUserById(Number(conv.otherUserId));
                     return { ...conv, userInfo };
                   } catch {
                     return { ...conv, userInfo: null };
