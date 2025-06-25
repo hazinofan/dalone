@@ -197,7 +197,7 @@ export default function ChatPage() {
   // 6) Fetch recipient’s profile once we have recipientId
   useEffect(() => {
     if (!recipientId) return;
-    getUserById(recipientId)
+    getUserById(Number(recipientId))
       .then((u) => setReceipientUser(u))
       .catch(() => console.error("Could not load recipient"));
   }, [recipientId]);
@@ -471,8 +471,8 @@ export default function ChatPage() {
                       <Ellipsis />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className={`${fira.className}`}>
-                      <DropdownMenuItem className="cursor-pointer" onClick={() => { router.push(receipientUser.role === "client" ? `/profile/${receipientUser.id}` : `/profile/professional/${receipientUser.id}` )}}>
-                         <UserRoundSearch />  Visit Profile 
+                      <DropdownMenuItem className="cursor-pointer" onClick={() => { router.push(receipientUser.role === "client" ? `/profile/${receipientUser.id}` : `/profile/professional/${receipientUser.id}`) }}>
+                        <UserRoundSearch />  Visit Profile
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
