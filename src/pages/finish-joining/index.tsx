@@ -289,7 +289,7 @@ export default function FinishSignup() {
           headers,
           body: JSON.stringify(clientPayload),
         });
-        router.replace(`/profile/${userInfo.id}`);
+        router.replace(`/profile/${userInfo?.id}`);
         toast({
           title: "Account created Successfully",
           description: "You can Now fill missing informations and start looking for professionals !",
