@@ -169,7 +169,7 @@ export function DateTimeRangePicker({
                                     <SelectItem
                                         key={t}
                                         value={t}
-                                        disabled={disabled}
+                                        disabled={!!disabled || undefined}
                                         className="px-4 py-2 hover:bg-gray-50"
                                     >
                                         <div className="flex items-center justify-between">
