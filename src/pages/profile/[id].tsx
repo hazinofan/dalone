@@ -47,6 +47,7 @@ const Profile = () => {
 
   // ALWAYS define formData at the top—never conditionally.
   const [formData, setFormData] = useState({
+    avatar: "",
     name: "",
     username: "",
     description: "",
@@ -96,15 +97,17 @@ const Profile = () => {
   useEffect(() => {
     if (userInfo?.clientProfile) {
       const cp = userInfo.clientProfile;
-      setFormData({
+      setFormData(prev => ({
+        ...prev,
         name: cp.name || "",
         username: cp.username || "",
         description: cp.description || "",
         phoneNumber: cp.phoneNumber || "",
         country: cp.country || "",
-      });
+      }));
     }
   }, [userInfo]);
+
 
   const handleStartConversation = async () => {
     const me = await getProfile();
@@ -170,12 +173,23 @@ const Profile = () => {
     );
   }
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const handleInputChange = (
+    valueOrEvent: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | string
+  ) => {
+    if (typeof valueOrEvent === "string") {
+      // CountrySelect passed us a string
+      setFormData(prev => ({
+        ...prev,
+        country: valueOrEvent
+      }));
+    } else {
+      // an <Input> or <Textarea> passed us an event
+      const { name, value } = valueOrEvent.target;
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
