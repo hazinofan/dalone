@@ -9,12 +9,34 @@ export default function GigDetailsPage() {
   const router = useRouter();
   const { id, gigId } = router.query;
 
-  const [gig, setGig] = useState<any>(null);
+  const [gig, setGig] = useState<Gig | null>(null);
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
   const [loadingData, setLoadingData] = useState(false);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [authUser, setAuthUser] = useState(0)
+
+  type TimeSlot = { from?: string; to?: string };
+
+  interface Gig {
+    id: number;
+    title: string;
+    heroImage: string;
+    priceBeforePromo: number;
+    priceAfterPromo?: number;
+    about: string;
+    whatsIncluded: string[];
+    servicePeriod: string;
+    availability: Record<string, TimeSlot>;
+    enableCustomOffers: boolean;
+    customOfferDescription?: string;
+    customOfferPriceBeforePromo?: number;
+    customOfferPriceAfterPromo?: number;
+    user?: {
+      professionalProfile: { username: string };
+    };
+  };
+
 
   async function loadGigById(gId: any) {
     setLoadingData(true);
