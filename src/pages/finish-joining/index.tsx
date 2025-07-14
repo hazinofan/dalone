@@ -14,8 +14,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Mail, Phone } from "lucide-react";
-import { useToast } from "@/hooks/use-toast"
+import { Check, Mail, Phone } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogClose,
@@ -38,9 +38,10 @@ export default function FinishSignup() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [userId, setUserId] = useState<number | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [tempPhone, setTempPhone] = useState("");
   const [dialogMessage, setDialogMessage] = useState("");
   const [step, setStep] = useState<number>(1);
-  const { toast } = useToast()
+  const { toast } = useToast();
 
   interface ProfessionalPayload {
     name: string;
@@ -59,7 +60,7 @@ export default function FinishSignup() {
   interface ClientPayload {
     name: string;
     username: string;
-    country: string
+    country: string;
     avatar: string;
     description: string;
     phoneNumber: string;
@@ -93,9 +94,9 @@ export default function FinishSignup() {
   type Language = { name: string; level: "Native" | "Fluent" | "Beginner" };
 
   const [occupation, setOccupation] = useState<string>("Hairdresser");
-  const [country, setCountry] = useState('')
-  const [userInfo, setUserInfo] = useState<UserProfile | null>(null)
-  const [city, setCity] = useState('')
+  const [country, setCountry] = useState("");
+  const [userInfo, setUserInfo] = useState<UserProfile | null>(null);
+  const [city, setCity] = useState("");
   const [otherOccupation, setOtherOccupation] = useState<string>("");
   const [skills, setSkills] = useState<Skill[]>([""]);
   const [languages, setLanguages] = useState<Language[]>([
@@ -192,7 +193,6 @@ export default function FinishSignup() {
       },
     });
 
-
     // 2) advance to step 2
     setStep(2);
   };
@@ -219,7 +219,7 @@ export default function FinishSignup() {
     getProfile()
       .then((me) => {
         console.log("Logged-in user:", me);
-        setUserInfo(me)
+        setUserInfo(me);
       })
       .catch((err) => {
         console.error("Could not load profile:", err);
@@ -292,8 +292,9 @@ export default function FinishSignup() {
         router.replace(`/profile/${userInfo?.id}`);
         toast({
           title: "Account created Successfully",
-          description: "You can Now fill missing informations and start looking for professionals !",
-        })
+          description:
+            "You can Now fill missing informations and start looking for professionals !",
+        });
       } else {
         // collect everything you’ve gathered
         const payload: ProfessionalPayload = {
@@ -315,11 +316,12 @@ export default function FinishSignup() {
           headers,
           body: JSON.stringify(payload),
         });
-        router.replace("/dashboard/pro");
+        router.replace("/profile/professional");
         toast({
           title: "Account created Successfully",
-          description: "You can Now fill missing informations and start looking for Clients !",
-        })
+          description:
+            "You can Now fill missing informations and start looking for Clients !",
+        });
       }
     } catch (error) {
       console.error(error, "error saving the user data");
@@ -354,20 +356,23 @@ export default function FinishSignup() {
   return (
     <div className="mt-26">
       {step === 1 && (
-        <div className="flex flex-col mt-40 items-center text-center max-w-md mx-auto">
-          <h1 className="text-2xl mb-6">Welcome! What type of account?</h1>
-          <div className="flex gap-6 justify-center mb-8">
+        <div className="flex flex-col mt-28 sm:mt-28 md:mt-40 items-center text-center w-full px-4 sm:px-6 max-w-md mx-auto">
+          <h1 className="text-xl sm:text-2xl mb-4 sm:mb-6">
+            Welcome! What type of account?
+          </h1>
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center mb-6 sm:mb-8 w-full">
             {(["client", "professional"] as const).map((role) => (
               <div
                 key={role}
                 onClick={() => setSelectedRole(role)}
-                className={` flex-shrink-0 border rounded-lg p-28 cursor-pointer transition
-              ${selectedRole === role
-                    ? "border-2 border-blue-500 shadow-lg"
-                    : "border-gray-200 hover:shadow-md"
-                  }`}
+                className={`flex-shrink-0 border rounded-lg p-4 sm:p-6 md:p-8 lg:p-28 cursor-pointer transition w-full sm:w-auto
+            ${
+              selectedRole === role
+                ? "border-2 border-blue-500 shadow-lg"
+                : "border-gray-200 hover:shadow-md"
+            }`}
               >
-                <h2 className="text-xl mb-2">
+                <h2 className="text-lg sm:text-xl mb-2">
                   {role === "client" ? "I am a Client" : "I am a Professional"}
                 </h2>
                 <img
@@ -377,7 +382,7 @@ export default function FinishSignup() {
                       : "/assets/freelancer.png"
                   }
                   alt={role}
-                  className="mx-auto h-80"
+                  className="mx-auto h-40 sm:h-60 md:h-80 object-contain"
                 />
               </div>
             ))}
@@ -385,7 +390,7 @@ export default function FinishSignup() {
           <Button
             onClick={handleNext}
             disabled={!selectedRole}
-            className="w-36 text-lg bg-blue-950 hover:bg-[#121d3a] transition-colors disabled:opacity-50 mx-auto"
+            className="w-full sm:w-36 text-base sm:text-lg bg-blue-950 hover:bg-[#121d3a] transition-colors disabled:opacity-50 mx-auto"
           >
             Next
           </Button>
@@ -393,270 +398,70 @@ export default function FinishSignup() {
       )}
 
       {step === 2 && selectedRole === "client" && (
-        <>
-          <div className="px-24 pt-32">
-            <OnboardingStepper currentStep={step} steps={clientSteps} />
-            <div className=" mb-10 flex flex-row items-center justify-between">
-              <div className=" max-w-xl">
-                <h1 className="text-4xl text-gray-700 mb-4 font-semibold">
-                  PERSONAL INFOS
-                </h1>
-                <span className=" mt-5 text-gray-500 w-20">
-                  {" "}
-                  tell us a bit about yourself. This informations will only
-                  appear on your public profile, so that potential clients can
-                  get to know you better
-                </span>
-              </div>
-              <div className="">
-                <img
-                  width={250}
-                  src="assets/personalinfos.png"
-                  alt="personal infos"
-                />
-              </div>
-            </div>
+        <div className="px-4 sm:px-6 md:px-24 pt-28 sm:pt-32">
+          <OnboardingStepper currentStep={step} steps={clientSteps} />
 
-            <Separator className=" mb-5 text-gray-800" />
-
-            <div className="space-y-6 mx-auto">
-              {/* Full Name row */}
-              <div className="grid grid-cols-[200px_minmax(0,1fr)] items-center gap-16">
-                <label className="text-xl font-normal">
-                  Full Name <span className="text-red-600">*</span>
-                </label>
-                <Input
-                  placeholder="John Doe …"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full h-14"
-                />
-              </div>
-
-              {/* Username row */}
-              <div className="grid grid-cols-[200px_minmax(0,1fr)] items-center gap-16">
-                <label className="text-xl font-normal">
-                  Username{" "}
-                  <span className="text-sm text-gray-400">(display name)</span>
-                  <span className="text-red-600">*</span>
-                </label>
-                <Input
-                  placeholder="ex: mr_haircut"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="w-full h-14"
-                />
-              </div>
-
-              <div className="mt-8 grid grid-cols-[200px_minmax(0,1fr)] items-center gap-16">
-                <label className="text-xl font-normal">
-                  Country :
-                  <span className="text-red-600">*</span>
-                </label>
-                <CountrySelect
-                  value={country}
-                  onChange={setCountry}
-                  placeholder="Search and select country"
-                />
-              </div>
-
-              {/* Avatar upload row */}
-              <div className="grid grid-cols-[200px_minmax(0,1fr)] items-center gap-16">
-                <label className="text-xl font-normal">Profile Picture</label>
-                <FileUploadField
-                  onFileSelected={(fileOrUrl) => {
-                    setAvatarUrl(fileOrUrl);
-                  }}
-                />
-              </div>
-
-              {/* Description row (multi-line) */}
-              <div className="grid grid-cols-[200px_minmax(0,1fr)] items-start gap-16">
-                <label className="text-xl font-normal">Description</label>
-                <Textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  cols={25}
-                  rows={8}
-                  placeholder="Share a bit about your self and what are you looking for as a client!"
-                  className="w-full"
-                />
-              </div>
-            </div>
-            <div className="float-end">
-              <Button
-                onClick={handleNextStep2Client}
-                className="mt-6 w-36 bg-blue-950 hover:bg-blue-[#0e193d] transition-colors"
-              >
-                Next
-              </Button>
-            </div>
-          </div>
-        </>
-      )}
-      {step === 3 && selectedRole === "client" && (
-        <>
-          <div className="py-32 px-24 space-y-6">
-            <OnboardingStepper currentStep={3} steps={clientSteps} />
-
-            <h1 className="text-4xl text-gray-700 mb-4 font-semibold">
-              ACCOUNT SECURITY
-            </h1>
-            <span className="block mb-6 text-gray-500">
-              Trust and safety is a big deal in our community. Please verify you
-              Email and Phone number so that we can keep your account secured !
-            </span>
-
-            <Separator />
-
-            {/* Password */}
-            {/* Email row */}
-            <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4">
-              <Mail className="text-gray-500 w-6 h-6" />
-
-              <div>
-                <span className="text-xl font-normal">Email:</span>{" "}
-                <span className="text-xl font-semibold italic text-gray-500">
-                  PRIVATE
-                </span>
-              </div>
-
-              <button
-                disabled
-                className="px-8 cursor-not-allowed py-4 border border-gray-300 text-sm font-medium bg-gray-400/15"
-              >
-                Verified
-              </button>
-            </div>
-
-            {/* Phone Number row */}
-            <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4">
-              <Phone className="text-gray-500 w-6 h-6" />
-
-              <div>
-                <span className="text-xl font-normal">Phone Number:</span>{" "}
-                <span className="text-xl font-semibold italic text-gray-500">
-                  PRIVATE
-                </span>
-              </div>
-
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="px-8 py-6 border border-gray-300 text-sm font-medium rounded-none"
-                  >
-                    Add Phone Number
-                  </Button>
-                </DialogTrigger>
-
-                <DialogContent className="sm:max-w-[425px]">
-                  <DialogHeader>
-                    <DialogTitle>Add Phone Number</DialogTitle>
-                    <DialogDescription>
-                      Enter your phone number so clients can reach you.
-                    </DialogDescription>
-                  </DialogHeader>
-
-                  <div className="mt-4">
-                    <Input
-                      type="tel"
-                      placeholder="+212 6 1234 5678"
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
-                      className="w-full"
-                    />
-                  </div>
-
-                  <DialogFooter>
-                    <DialogClose asChild>
-                      <Button>Save</Button>
-                    </DialogClose>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </div>
-
-            <div className="text-right">
-              <Button
-                onClick={handleSubmit}
-                disabled={
-                  !avatarUrl ||
-                  !phoneNumber ||
-                  !name ||
-                  !username ||
-                  !occupation ||
-                  !skills
-                }
-                className="mt-6 w-36 bg-blue-950 rounded-none hover:rounded-xl transition-all hover:bg-blue-950 py-5"
-              >
-                Finish
-              </Button>
-            </div>
-          </div>
-        </>
-      )}
-
-      {step === 2 && selectedRole === "professional" && (
-        <div className=" py-36 px-24 ">
-          <OnboardingStepper currentStep={step} steps={professionalSteps} />
-          <div className=" mb-10 flex flex-row items-center justify-between">
-            <div className=" max-w-xl">
+          {/* header + illustration */}
+          <div className="mb-10 flex flex-col md:flex-row items-center justify-between">
+            <div className="max-w-xl text-center md:text-left">
               <h1 className="text-4xl text-gray-700 mb-4 font-semibold">
                 PERSONAL INFOS
               </h1>
-              <span className=" mt-5 text-gray-500 w-20">
-                {" "}
-                tell us a bit about yourself. This informations will only appear
+              <span className="block mt-5 text-gray-500">
+                tell us a bit about yourself. This information will only appear
                 on your public profile, so that potential clients can get to
                 know you better
               </span>
             </div>
-            <div className="">
+            <div className="mt-8 md:mt-0">
               <img
-                width={250}
                 src="assets/personalinfos.png"
                 alt="personal infos"
+                className="w-full max-w-xs md:max-w-[250px] mx-auto"
               />
             </div>
           </div>
 
-          <Separator className=" mb-5 text-gray-800" />
+          <Separator className="mb-5" />
 
-          <div className="space-y-6 mx-auto">
-            {/* Full Name row */}
-            <div className="grid grid-cols-[200px_minmax(0,1fr)] items-center gap-16">
-              <label className="text-xl font-normal">
-                Full Name <span className="text-red-600">*</span>
-              </label>
-              <Input
-                placeholder="John Doe …"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full h-14"
-              />
-            </div>
+          {/* form fields */}
+          <div className="space-y-6 mx-auto max-w-lg md:max-w-none mb-5">
+            {[
+              {
+                label: "Full Name",
+                placeholder: "John Doe …",
+                value: name,
+                onChange: (e: any) => setName(e.target.value),
+              },
+              {
+                label: "Username",
+                placeholder: "ex: mr_haircut",
+                value: username,
+                onChange: (e: any) => setUsername(e.target.value),
+                extra: (
+                  <span className="text-sm text-gray-400">(display name)</span>
+                ),
+              },
+            ].map(({ label, placeholder, value, onChange, extra }) => (
+              <div
+                key={label}
+                className="grid grid-cols-1 sm:grid-cols-[200px_minmax(0,1fr)] items-center gap-6 sm:gap-16"
+              >
+                <label className="text-xl font-normal">
+                  {label} {extra} <span className="text-red-600">*</span>
+                </label>
+                <Input
+                  placeholder={placeholder}
+                  value={value}
+                  onChange={onChange}
+                  className="w-full h-14"
+                />
+              </div>
+            ))}
 
-            {/* Username row */}
-            <div className="grid grid-cols-[200px_minmax(0,1fr)] items-center gap-16">
+            <div className="grid grid-cols-1 sm:grid-cols-[200px_minmax(0,1fr)] items-center gap-6 sm:gap-16">
               <label className="text-xl font-normal">
-                Username{" "}
-                <span className="text-sm text-gray-400">(display name)</span>
-                <span className="text-red-600">*</span>
-              </label>
-              <Input
-                placeholder="ex: mr_haircut"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full h-14"
-              />
-            </div>
-
-            <div className="mt-8 grid grid-cols-[200px_minmax(0,1fr)] items-center gap-16">
-              <label className="text-xl font-normal">
-                Country :
-                <span className="text-red-600">*</span>
+                Country: <span className="text-red-600">*</span>
               </label>
               <CountrySelect
                 value={country}
@@ -667,8 +472,7 @@ export default function FinishSignup() {
 
             <div className="grid grid-cols-[200px_minmax(0,1fr)] items-center gap-16">
               <label className="text-xl font-normal">
-                City :
-                <span className="text-red-600">*</span>
+                City :<span className="text-red-600">*</span>
               </label>
               <Input
                 placeholder="Florida ..."
@@ -678,9 +482,251 @@ export default function FinishSignup() {
               />
             </div>
 
-            {/* Avatar upload row */}
-            <div className="grid grid-cols-[200px_minmax(0,1fr)] items-center gap-16">
+            <div className="grid grid-cols-1 sm:grid-cols-[200px_minmax(0,1fr)] items-center gap-6 sm:gap-16">
               <label className="text-xl font-normal">Profile Picture</label>
+              <FileUploadField onFileSelected={setAvatarUrl} />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-[200px_minmax(0,1fr)] items-start gap-6 sm:gap-16">
+              <label className="text-xl font-normal">Description</label>
+              <Textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={8}
+                placeholder="Share a bit about yourself and what you’re looking for as a client!"
+                className="w-full"
+              />
+            </div>
+          </div>
+
+          {/* next button */}
+          <div className="mt-8 flex justify-center md:justify-end">
+            <Button
+              onClick={handleNextStep2Client}
+              className="w-full sm:w-36 bg-blue-950 hover:bg-blue-[#0e193d] transition-colors"
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {step === 3 && selectedRole === "client" && (
+        <>
+          <div className="py-32 sm:py-16 md:py-24 lg:py-32 px-4 sm:px-8 md:px-12 lg:px-24 space-y-4 sm:space-y-6">
+            <OnboardingStepper currentStep={3} steps={clientSteps} />
+
+            <h1 className="text-2xl sm:text-3xl md:text-4xl text-gray-700 mb-2 sm:mb-4 font-semibold">
+              ACCOUNT SECURITY
+            </h1>
+            <p className="block mb-4 sm:mb-6 text-sm sm:text-base text-gray-500">
+              Trust and safety is a big deal in our community. Please verify
+              your Email and Phone number so that we can keep your account
+              secured!{" "}
+              <span className=" text-sm text-gray-600">
+                {" "}
+                ( you can update your informations later in your profile section
+                ){" "}
+              </span>
+            </p>
+
+            <Separator />
+
+            {/* Email row */}
+            <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 sm:gap-4">
+              <Mail className="text-gray-500 w-5 h-5 sm:w-6 sm:h-6" />
+
+              <div>
+                <span className="text-base sm:text-lg md:text-xl font-normal">
+                  Email:
+                </span>{" "}
+                <span className="text-base sm:text-lg md:text-xl font-semibold italic text-gray-500">
+                  PRIVATE
+                </span>
+              </div>
+
+              <button
+                disabled
+                className="px-4 sm:px-6 py-2 sm:py-3 md:py-4 border border-gray-300 text-xs sm:text-sm font-medium bg-gray-400/15 cursor-not-allowed"
+              >
+                Verified
+              </button>
+            </div>
+
+            {/* Phone Number row */}
+            <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 sm:gap-4">
+              <Phone className="text-gray-500 w-5 h-5 sm:w-6 sm:h-6" />
+
+              <div>
+                <span className="text-base sm:text-lg md:text-xl font-normal">
+                  Phone Number:
+                </span>{" "}
+                <span className="text-base sm:text-lg md:text-xl font-semibold italic text-gray-500">
+                  {phoneNumber ?? "PRIVATE"}
+                </span>
+              </div>
+
+              {phoneNumber ? (
+                <div className="flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 text-green-700 text-xs sm:text-sm rounded">
+                  <Check className="w-4 h-4" />
+                  <span>Verified</span>
+                </div>
+              ) : (
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="px-4 sm:px-6 py-3 sm:py-4 md:py-5 border border-gray-300 text-xs sm:text-sm font-medium rounded-none hover:bg-gray-50"
+                    >
+                      Add Phone Number
+                    </Button>
+                  </DialogTrigger>
+
+                  <DialogContent className="w-[90vw] sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle>Add Phone Number</DialogTitle>
+                      <DialogDescription>
+                        Enter your phone number so clients can reach you.
+                      </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="mt-4">
+                      <Input
+                        type="tel"
+                        placeholder="+212 6 1234 5678"
+                        value={tempPhone}
+                        onChange={(e) => setTempPhone(e.target.value)}
+                        className="w-full"
+                      />
+                    </div>
+
+                    <DialogFooter>
+                      {/* only this button closes the dialog */}
+                      <DialogClose asChild>
+                        <Button
+                          onClick={() => {
+                            setPhoneNumber(tempPhone.trim());
+                          }}
+                          disabled={!tempPhone.trim()}
+                        >
+                          Save
+                        </Button>
+                      </DialogClose>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              )}
+            </div>
+
+            <div className="text-right mt-4 sm:mt-6">
+              <Button
+                onClick={handleSubmit}
+                disabled={
+                  !avatarUrl ||
+                  !phoneNumber ||
+                  !name ||
+                  !username ||
+                  !occupation ||
+                  !skills
+                }
+                className="w-full sm:w-36 bg-blue-950 rounded-none hover:rounded-xl transition-all hover:bg-blue-950 py-3 sm:py-4 md:py-5"
+              >
+                Finish
+              </Button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {step === 2 && selectedRole === "professional" && (
+        <div className="py-32 sm:py-16 md:py-24 lg:py-36 px-4 sm:px-8 md:px-12 lg:px-24">
+          <OnboardingStepper currentStep={step} steps={professionalSteps} />
+
+          <div className="mb-6 sm:mb-10 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="max-w-xl">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl text-gray-700 mb-2 sm:mb-4 font-semibold">
+                PERSONAL INFOS
+              </h1>
+              <p className="text-sm sm:text-base text-gray-500">
+                Tell us a bit about yourself. This information will only appear
+                on your public profile, so that potential clients can get to
+                know you better.
+              </p>
+            </div>
+            <div className="hidden md:block">
+              <img
+                width={250}
+                src="assets/personalinfos.png"
+                alt="personal infos"
+                className="w-[200px] lg:w-[250px]"
+              />
+            </div>
+          </div>
+
+          <Separator className="mb-4 sm:mb-5 text-gray-800" />
+
+          <div className="space-y-4 sm:space-y-6 mx-auto">
+            {/* Full Name */}
+            <div className="grid grid-cols-1 sm:grid-cols-[minmax(150px,200px)_minmax(0,1fr)] items-center gap-4 sm:gap-8 md:gap-16">
+              <label className="text-base sm:text-lg md:text-xl font-normal">
+                Full Name <span className="text-red-600">*</span>
+              </label>
+              <Input
+                placeholder="John Doe …"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full h-12 sm:h-14"
+              />
+            </div>
+
+            {/* Username */}
+            <div className="grid grid-cols-1 sm:grid-cols-[minmax(150px,200px)_minmax(0,1fr)] items-center gap-4 sm:gap-8 md:gap-16">
+              <label className="text-base sm:text-lg md:text-xl font-normal">
+                Username{" "}
+                <span className="text-xs sm:text-sm text-gray-400">
+                  (display name)
+                </span>
+                <span className="text-red-600">*</span>
+              </label>
+              <Input
+                placeholder="ex: mr_haircut"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full h-12 sm:h-14"
+              />
+            </div>
+
+            {/* Country */}
+            <div className="grid grid-cols-1 sm:grid-cols-[minmax(150px,200px)_minmax(0,1fr)] items-center gap-4 sm:gap-8 md:gap-16 mt-6 sm:mt-8">
+              <label className="text-base sm:text-lg md:text-xl font-normal">
+                Country <span className="text-red-600">*</span>
+              </label>
+              <CountrySelect
+                value={country}
+                onChange={setCountry}
+                placeholder="Search and select country"
+              />
+            </div>
+
+            {/* City */}
+            <div className="grid grid-cols-1 sm:grid-cols-[minmax(150px,200px)_minmax(0,1fr)] items-center gap-4 sm:gap-8 md:gap-16">
+              <label className="text-base sm:text-lg md:text-xl font-normal">
+                City <span className="text-red-600">*</span>
+              </label>
+              <Input
+                placeholder="Florida ..."
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                className="w-full h-12 sm:h-14"
+              />
+            </div>
+
+            {/* Profile Picture */}
+            <div className="grid grid-cols-1 sm:grid-cols-[minmax(150px,200px)_minmax(0,1fr)] items-center gap-4 sm:gap-8 md:gap-16">
+              <label className="text-base sm:text-lg md:text-xl font-normal">
+                Profile Picture
+              </label>
               <FileUploadField
                 onFileSelected={(fileOrUrl) => {
                   setAvatarUrl(fileOrUrl);
@@ -688,23 +734,26 @@ export default function FinishSignup() {
               />
             </div>
 
-            {/* Description row (multi-line) */}
-            <div className="grid grid-cols-[200px_minmax(0,1fr)] items-start gap-16">
-              <label className="text-xl font-normal">Description</label>
+            {/* Description */}
+            <div className="grid grid-cols-1 sm:grid-cols-[minmax(150px,200px)_minmax(0,1fr)] items-start gap-4 sm:gap-8 md:gap-16">
+              <label className="text-base sm:text-lg md:text-xl font-normal">
+                Description
+              </label>
               <Textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Share a bit about your work experience!"
-                className="w-full"
-                rows={10}
+                className="w-full min-h-[150px] sm:min-h-[200px]"
+                rows={8}
               />
             </div>
           </div>
-          <div className="float-end">
+
+          <div className="flex justify-end mt-6">
             <Button
               onClick={handleNextStep2}
               disabled={!name || !username || !country || !city}
-              className="mt-6 w-36 bg-blue-950 hover:bg-blue-[#0e193d] transition-colors"
+              className="w-full sm:w-36 bg-blue-950 hover:bg-[#0e193d] transition-colors"
             >
               Next
             </Button>
@@ -713,7 +762,7 @@ export default function FinishSignup() {
       )}
 
       {step === 3 && selectedRole === "professional" && (
-        <div className="py-36 px-24 space-y-6">
+        <div className="py-36 md:px-24 px-8 space-y-6">
           <OnboardingStepper currentStep={3} steps={professionalSteps} />
 
           <div className="flex flex-row items-center justify-between">
@@ -927,7 +976,7 @@ export default function FinishSignup() {
       )}
 
       {step === 4 && selectedRole === "professional" && (
-        <div className="py-32 px-24 space-y-6">
+        <div className="md:py-32 pt-32 md:px-24 px-5 space-y-6">
           <OnboardingStepper currentStep={4} steps={professionalSteps} />
 
           <h1 className="text-4xl text-gray-700 mb-4 font-semibold">
@@ -961,53 +1010,80 @@ export default function FinishSignup() {
           </div>
 
           {/* Phone Number row */}
-          <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4">
-            <Phone className="text-gray-500 w-6 h-6" />
+          <div className="grid grid-cols-1 xs:grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 sm:gap-4">
+      {/* Icon - Hidden on smallest screens */}
+      <div className="hidden xs:block">
+        <Phone className="text-gray-500 w-5 h-5 sm:w-6 sm:h-6" />
+      </div>
 
-            <div>
-              <span className="text-xl font-normal">Phone Number:</span>{" "}
-              <span className="text-xl font-semibold italic text-gray-500">
-                PRIVATE
-              </span>
+      {/* Label and value */}
+      <div className="flex flex-col xs:flex-row gap-1 xs:items-center">
+        <span className="text-base sm:text-lg font-medium text-gray-700">
+          Phone Number:
+        </span>
+        <span className="text-sm sm:text-base font-medium italic text-gray-500">
+          {phoneNumber || "PRIVATE"}
+        </span>
+      </div>
+
+      {/* Button / Verified badge */}
+      {phoneNumber ? (
+        <div className="flex items-center justify-end xs:justify-center gap-2 px-3 py-2 bg-green-50 border border-green-200 text-green-700 text-xs sm:text-sm rounded">
+          <Check className="w-4 h-4" />
+          <span>Verified</span>
+        </div>
+      ) : (
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full xs:w-auto px-4 py-3 sm:px-6 sm:py-4 border border-gray-300 text-xs sm:text-sm font-medium rounded hover:bg-gray-50"
+            >
+              Add Phone Number
+            </Button>
+          </DialogTrigger>
+
+          <DialogContent className="w-[90vw] max-w-[400px] sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle className="text-lg sm:text-xl">
+                Add Phone Number
+              </DialogTitle>
+              <DialogDescription className="text-sm sm:text-base">
+                Enter your phone number so clients can reach you.
+              </DialogDescription>
+            </DialogHeader>
+
+            {/* <-- use tempPhone here */}
+            <div className="mt-4">
+              <Input
+                type="tel"
+                placeholder="+212 6 1234 5678"
+                value={tempPhone}
+                onChange={(e) => setTempPhone(e.target.value)}
+                className="w-full h-10 sm:h-11"
+              />
             </div>
 
-            <Dialog>
-              <DialogTrigger asChild>
+            <DialogFooter>
+              {/* only this button will close */}
+              <DialogClose asChild>
                 <Button
-                  variant="outline"
-                  size="sm"
-                  className="px-8 py-6 border border-gray-300 text-sm font-medium rounded-none"
+                  className="w-full sm:w-auto"
+                  disabled={!tempPhone.trim()}
+                  onClick={() => {
+                    setPhoneNumber(tempPhone.trim());
+                    setTempPhone("");
+                  }}
                 >
-                  Add Phone Number
+                  Save Changes
                 </Button>
-              </DialogTrigger>
-
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Add Phone Number</DialogTitle>
-                  <DialogDescription>
-                    Enter your phone number so clients can reach you.
-                  </DialogDescription>
-                </DialogHeader>
-
-                <div className="mt-4">
-                  <Input
-                    type="tel"
-                    placeholder="+212 6 1234 5678"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    className="w-full"
-                  />
-                </div>
-
-                <DialogFooter>
-                  <DialogClose asChild>
-                    <Button>Save</Button>
-                  </DialogClose>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </div>
+              </DialogClose>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+    </div>
 
           <div className="text-right">
             <Button

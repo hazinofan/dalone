@@ -22,10 +22,8 @@ interface JoiningProps {
   className?: string;
 }
 
-
 export function Join({ className }: JoiningProps) {
   const router = useRouter();
-  // ★ control the open state yourself
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -35,49 +33,40 @@ export function Join({ className }: JoiningProps) {
     user: { sub: number; email: string; role: string };
     isNew: boolean;
   }) {
-    // 1) Store JWT
     localStorage.setItem("dalone:token", payload.access_token);
-
-    // 2) Close the Join dialog
     setOpen(false);
 
     const { role, sub } = payload.user;
 
     if (role === "pending") {
-      // Newly created accounts or those needing extra info
       router.replace(`/finish-joining?token=${encodeURIComponent(payload.access_token)}`);
     } else if (role === "client") {
-      // Existing client user → go to their profile page
       router.replace(`/profile/${sub}`);
     } else if (role === "professional") {
-      // Existing professional user → go to their professional profile
       router.replace(`/profile/professional/${sub}`);
     } else {
-      // Fallback: if for some reason there's another role, send to a safe default
       router.replace("/");
     }
   }
 
+  const handleSignUp = async () => {
+    try {
+      const res = await fetch("http://localhost:3001/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const body = await res.json();
+      const token = body.access_token.access_token;
+      if (!res.ok) throw new Error(body.message);
 
-    const handleSignUp = async () => {
-      try {
-        const res = await fetch("http://localhost:3001/auth/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        });
-        const body = await res.json();
-        const token = body.access_token.access_token;
-        if (!res.ok) throw new Error(body.message);
+      localStorage.setItem("dalone:token", token);
+      router.replace(`/finish-joining?token=${encodeURIComponent(token)}`);
+    } catch (error) {
+      console.error(error, " Error while authentificating !");
+    }
+  };
 
-        localStorage.setItem("dalone:token", token);
-        router.replace(`/finish-joining?token=${encodeURIComponent(token)}`);
-      } catch (error) {
-        console.error(error, " Error while authentificating !");
-      }
-    };
-
-  // ★ whenever we navigate to /finish-joining, close the dialog
   useEffect(() => {
     if (router.pathname === "/finish-joining") {
       setOpen(false);
@@ -90,23 +79,23 @@ export function Join({ className }: JoiningProps) {
       <DialogTrigger asChild>
         <Button
           onClick={() => setOpen(true)}
-          className="hidden md:flex items-center space-x-2 bg-blue-900 hover:bg-blue-950 text-white hover:text-white rounded-full px-10 py-2"
+          className="md:flex items-center space-x-2 bg-blue-900 hover:bg-blue-950 text-white hover:text-white rounded-full px-10 py-2"
           variant="outline"
         >
           Join
         </Button>
       </DialogTrigger>
       <DialogContent
-        className={`${fira.className} max-w-5xl p-0 overflow-hidden w-[900px] h-[600px] max-h-[90vh] rounded-xl`}
+        className={`${fira.className} p-0 overflow-hidden rounded-xl w-[95vw] max-w-[900px] h-[95vh] max-h-[600px] md:h-[600px] md:max-h-[90vh]`}
       >
-        <div className="flex h-full">
-          {/* Left marketing panel */}
-          <div className="hidden md:flex flex-col justify-between w-1/2 bg-[url('/assets/login-bg.png')]  /* set your image path */ bg-cover bg-centertext-white p-8">
+        <div className="flex flex-col md:flex-row h-full">
+          {/* Left marketing panel - hidden on mobile */}
+          <div className="hidden md:flex flex-col justify-between w-1/2 bg-[url('/assets/login-bg.png')] bg-cover bg-center text-white p-8">
             <div>
-              <h2 className="text-4xl pt-5 font-semibold mb-6">
+              <h2 className="text-4xl pt-5 font-semibold mb-6 text-black">
                 Success starts here
               </h2>
-              <ul className="space-y-4 text-lg font-semibold pt-5">
+              <ul className="space-y-4 text-lg font-semibold pt-5 text-black">
                 {[
                   "Over 700 categories",
                   "Quality work done faster",
@@ -127,30 +116,27 @@ export function Join({ className }: JoiningProps) {
           </div>
 
           {/* Right sign-in form */}
-          <div className="flex flex-col w-full md:w-1/2 p-8 pb-4">
-            <h1 className=" text-4xl text-blue-950 font-semibold pt-6 mb-5 self-center">
-              {" "}
-              DALONE{" "}
+          <div className="flex flex-col w-full md:w-1/2 p-6 pb-4 overflow-y-auto">
+            <h1 className="text-3xl md:text-4xl text-blue-950 font-semibold mb-5 self-center">
+              DALONE
             </h1>
-            <div className="mb-">
-              <DialogHeader>
-                <DialogTitle className="text-2xl self-center">
-                  Create a new account
-                </DialogTitle>
-                <DialogDescription className="mb-6 self-center">
-                  Aleady have an account?{" "}
-                  <a
-                    href="/register"
-                    className="text-blue-900 pb-5 hover:underline"
-                  >
-                    Sign in
-                  </a>
-                </DialogDescription>
-              </DialogHeader>
-            </div>
+            
+            <DialogHeader>
+              <DialogTitle className="text-2xl self-center">
+                Create a new account
+              </DialogTitle>
+              <DialogDescription className="mb-6 self-center">
+                Already have an account?{" "}
+                <a
+                  href="/register"
+                  className="text-blue-900 pb-5 hover:underline"
+                >
+                  Sign in
+                </a>
+              </DialogDescription>
+            </DialogHeader>
 
             <div className="mb-5">
-              {/* Google button */}
               <GoogleButton onLoginSuccess={handleAuthSuccess} />
             </div>
 
@@ -195,6 +181,7 @@ export function Join({ className }: JoiningProps) {
                 </Button>
               </DialogFooter>
             </form>
+
             <div className="text-xs">
               By joining, you agree to the Dalone Terms of Service and to
               occasionally receive emails from us. Please read our Privacy

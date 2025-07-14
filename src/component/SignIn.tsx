@@ -36,15 +36,11 @@ export function SignIn({ className }: SignInProps) {
     access_token: string;
     user: { sub: number; email: string; role: string };
   }) {
-    // 1) store the JWT
     localStorage.setItem("dalone:token", payload.access_token);
-
-    // 2) close the modal
     setOpen(false);
 
     const { role, sub } = payload.user;
 
-    // 3) redirect based on role
     if (role === "pending") {
       router.push({
         pathname: "/finish-joining",
@@ -55,14 +51,13 @@ export function SignIn({ className }: SignInProps) {
     } else if (role === "professional") {
       router.push(`/profile/professional/${sub}`);
     } else {
-      // fallback
       router.push("/");
     }
   }
 
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
       const res = await fetch("http://localhost:3001/auth/login", {
         method: "POST",
@@ -75,16 +70,12 @@ export function SignIn({ className }: SignInProps) {
         throw new Error(body.message || "Login failed");
       }
 
-      // unpack
       const { access_token } = body as {
         access_token: string;
         user: { sub: number; email: string; role: string };
       };
 
-      // store the raw JWT
       localStorage.setItem("dalone:token", access_token);
-
-      // close the dialog
       setOpen(false);
       window.location.reload()
     } catch (err) {
@@ -93,6 +84,8 @@ export function SignIn({ className }: SignInProps) {
         title: "Error while authentificating !",
         description: String(err),
       })
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -108,11 +101,11 @@ export function SignIn({ className }: SignInProps) {
         </Button>
       </DialogTrigger>
       <DialogContent
-        className={`${fira.className} max-w-5xl p-0 overflow-hidden w-[900px] h-[600px] max-h-[90vh] rounded-xl`}
+        className={`${fira.className} p-0 overflow-hidden rounded-xl w-[95vw] max-w-[900px] h-[95vh] max-h-[600px] md:h-[600px] md:max-h-[90vh]`}
       >
-        <div className="flex h-full">
-          {/* Left marketing panel */}
-          <div className="hidden md:flex flex-col justify-between w-1/2 bg-[url('/assets/login-bg.png')]  /* set your image path */ bg-cover bg-centertext-white p-8">
+        <div className="flex flex-col md:flex-row h-full">
+          {/* Left marketing panel - hidden on mobile */}
+          <div className="hidden md:flex flex-col justify-between w-1/2 bg-[url('/assets/login-bg.png')] bg-cover bg-center text-white p-8">
             <div>
               <h2 className="text-4xl pt-5 font-semibold mb-6">
                 Success starts here
@@ -138,29 +131,26 @@ export function SignIn({ className }: SignInProps) {
           </div>
 
           {/* Right sign-in form */}
-          <div className="flex flex-col w-full md:w-1/2 p-8 pb-4">
-            <h1 className=" text-4xl text-blue-950 font-semibold pt-6 mb-5 self-center">
-              {" "}
-              DALONE{" "}
+          <div className="flex flex-col w-full md:w-1/2 p-6 pb-4 overflow-y-auto">
+            <h1 className="text-3xl md:text-4xl text-blue-950 font-semibold pt-6 mb-5 self-center">
+              DALONE
             </h1>
-            <div className="mb-5">
-              <DialogHeader>
-                <DialogTitle className="text-2xl self-center">
-                  Sign in to your account
-                </DialogTitle>
-                <DialogDescription className="mb-6 self-center">
-                  Don’t have an account?{" "}
-                  <a
-                    href="/register"
-                    className="text-blue-900 pb-5 hover:underline"
-                  >
-                    Join here
-                  </a>
-                </DialogDescription>
-              </DialogHeader>
-            </div>
+            
+            <DialogHeader>
+              <DialogTitle className="text-2xl self-center">
+                Sign in to your account
+              </DialogTitle>
+              <DialogDescription className="mb-6 self-center">
+                Don't have an account?{" "}
+                <a
+                  href="/register"
+                  className="text-blue-900 hover:underline"
+                >
+                  Join here
+                </a>
+              </DialogDescription>
+            </DialogHeader>
 
-            {/* Google button */}
             <div className="mb-5">
               <GoogleButton onLoginSuccess={handleAuthSuccess} />
             </div>

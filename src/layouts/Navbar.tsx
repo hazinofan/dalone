@@ -28,7 +28,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { getProfile, getUserById } from "../../core/services/auth.service";
 import { Inter } from "next/font/google";
-import { getMyNotifications, markNotificationAsRead } from "../../core/services/notifications.service";
+import {
+  getMyNotifications,
+  markNotificationAsRead,
+} from "../../core/services/notifications.service";
 const fira = Inter({ subsets: ["latin"], weight: ["300", "400", "700"] });
 
 const Navbar = () => {
@@ -39,11 +42,12 @@ const Navbar = () => {
   const [user, setUser] = useState<any>(null);
   const [userInfo, setUserInfo] = useState<any>(null);
   const router = useRouter();
-  const [userRole, setUserRole] = useState("")
+  const [userRole, setUserRole] = useState("");
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+  const API_BASE_URL =
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   const serviceOptions = ["Coiffure", "Plomberie", "Électricité", "Jardinage"];
 
@@ -113,7 +117,7 @@ const Navbar = () => {
         return res.json();
       })
       .then(async (me) => {
-        const res = await getUserById(me.id)
+        const res = await getUserById(me.id);
         console.log("User info:", res);
         setUser(res);
       })
@@ -130,11 +134,9 @@ const Navbar = () => {
     router.push("/");
   };
 
-  // Get user infos 
+  // Get user infos
   useEffect(() => {
-    getMyNotifications()
-      .then(setNotifications)
-      .catch(console.error);
+    getMyNotifications().then(setNotifications).catch(console.error);
     getProfile()
       .then((me) => {
         console.log("Logged-in user:", me);
@@ -159,16 +161,16 @@ const Navbar = () => {
     const diffMs = now.getTime() - date.getTime();
     const diffSec = Math.floor(diffMs / 1000);
 
-    if (diffSec < 60) return 'Just now';
+    if (diffSec < 60) return "Just now";
     if (diffSec < 3600) return `${Math.floor(diffSec / 60)} minute(s) ago`;
     if (diffSec < 86400) return `${Math.floor(diffSec / 3600)} hour(s) ago`;
-    if (diffSec < 172800) return 'Yesterday';
+    if (diffSec < 172800) return "Yesterday";
     return `${Math.floor(diffSec / 86400)} day(s) ago`;
   }
 
   return (
-    <header className="bg-white rounded-2xl fixed top-3 left-0 right-0 z-30 shadow px-2 py-4 mx-16">
-      <div className="px-16 mx-auto flex items-center justify-between">
+    <header className="bg-white rounded-2xl fixed top-3 left-0 right-0 z-30 shadow px-2 md:py-4 pt-4 mx-16">
+      <div className=" px-2 md:px-16 mx-auto flex items-center justify-between">
         <div className="flex items-center space-x-12">
           <Link href="/" className="text-2xl font-bold text-blue-950">
             DALONE
@@ -188,10 +190,11 @@ const Navbar = () => {
                   <ChevronDown className="ml-1" size={16} />
                 </button>
                 <ul
-                  className={` absolute left-0 top-full mt-2 w-40 bg-white rounded-md shadow-lg transform transition-all duration-200 origin-top ${servicesOpen
-                    ? "opacity-100 scale-100 pointer-events-auto"
-                    : "opacity-0 scale-95 pointer-events-none"
-                    }`}
+                  className={` absolute left-0 top-full mt-2 w-40 bg-white rounded-md shadow-lg transform transition-all duration-200 origin-top ${
+                    servicesOpen
+                      ? "opacity-100 scale-100 pointer-events-auto"
+                      : "opacity-0 scale-95 pointer-events-none"
+                  }`}
                 >
                   {serviceOptions.map((name) => (
                     <li
@@ -252,7 +255,9 @@ const Navbar = () => {
                     className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl z-50 border border-gray-100 overflow-hidden"
                   >
                     <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                      <h3 className="font-semibold text-gray-800">Notifications</h3>
+                      <h3 className="font-semibold text-gray-800">
+                        Notifications
+                      </h3>
                       <button
                         onClick={() => setShowDropdown(false)}
                         className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -265,7 +270,9 @@ const Navbar = () => {
                       {notifications.length === 0 ? (
                         <div className="flex flex-col items-center justify-center p-6 text-center">
                           <BellOff className="h-8 w-8 text-gray-300 mb-2" />
-                          <p className="text-gray-500 text-sm">No new notifications</p>
+                          <p className="text-gray-500 text-sm">
+                            No new notifications
+                          </p>
                         </div>
                       ) : (
                         <ul className="divide-y divide-gray-100">
@@ -278,24 +285,42 @@ const Navbar = () => {
                               onClick={async () => {
                                 // 1) Mark this notification as read
                                 await markNotificationAsRead(notif.id);
-                                setNotifications(prev =>
-                                  prev.map(n => (n.id === notif.id ? { ...n, isRead: true } : n))
+                                setNotifications((prev) =>
+                                  prev.map((n) =>
+                                    n.id === notif.id
+                                      ? { ...n, isRead: true }
+                                      : n
+                                  )
                                 );
 
                                 // 2) If it's a "message" notification, navigate to /messages
-                                if (notif.type === 'message') {
-                                  router.push('/messages');
+                                if (notif.type === "message") {
+                                  router.push("/messages");
                                 }
 
                                 // 3) Close dropdown in any case
                                 setShowDropdown(false);
                               }}
-                              className={`px-4 py-3 cursor-pointer transition-colors ${notif.isRead ? 'bg-white' : 'bg-blue-50'} hover:bg-gray-50`}
+                              className={`px-4 py-3 cursor-pointer transition-colors ${
+                                notif.isRead ? "bg-white" : "bg-blue-50"
+                              } hover:bg-gray-50`}
                             >
                               <div className="flex items-start gap-3">
-                                <div className={`mt-0.5 flex-shrink-0 h-2 w-2 rounded-full ${notif.isRead ? 'bg-transparent' : 'bg-blue-500'}`} />
+                                <div
+                                  className={`mt-0.5 flex-shrink-0 h-2 w-2 rounded-full ${
+                                    notif.isRead
+                                      ? "bg-transparent"
+                                      : "bg-blue-500"
+                                  }`}
+                                />
                                 <div className="flex-1 min-w-0">
-                                  <p className={`text-sm ${notif.isRead ? 'text-gray-600' : 'text-gray-900 font-medium'} truncate`}>
+                                  <p
+                                    className={`text-sm ${
+                                      notif.isRead
+                                        ? "text-gray-600"
+                                        : "text-gray-900 font-medium"
+                                    } truncate`}
+                                  >
                                     {notif.message}
                                   </p>
                                   <p className="text-xs text-gray-400 mt-1">
@@ -324,7 +349,9 @@ const Navbar = () => {
                                 await markNotificationAsRead(notif.id);
                               }
                             });
-                            setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+                            setNotifications((prev) =>
+                              prev.map((n) => ({ ...n, isRead: true }))
+                            );
                           }}
                           className="text-xs text-blue-600 hover:text-blue-800 w-full text-center py-2 transition-colors"
                         >
@@ -339,11 +366,15 @@ const Navbar = () => {
               {/* User info with avatar and name */}
               <div className="flex items-center gap-3 group">
                 <Avatar className="h-9 w-9 border-2 border-white shadow">
-                  <AvatarImage src={`${API_BASE_URL}/public/${user.avatar}`} alt={user.email} />
+                  <AvatarImage
+                    src={`${API_BASE_URL}/public/${user.avatar}`}
+                    alt={user.email}
+                  />
                   <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
-                    {user.email
-                      ? user.email.charAt(0).toUpperCase()
-                      : "" /* or “?” or any placeholder */
+                    {
+                      user.email
+                        ? user.email.charAt(0).toUpperCase()
+                        : "" /* or “?” or any placeholder */
                     }
                   </AvatarFallback>
                 </Avatar>
@@ -361,7 +392,7 @@ const Navbar = () => {
               </div>
 
               {/* Dropdown menu */}
-              <DropdownMenu >
+              <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
@@ -386,7 +417,9 @@ const Navbar = () => {
                   {/* Professional Profile button */}
                   {userRole === "professional" && (
                     <DropdownMenuItem
-                      onClick={() => { router.push(`/profile/professional/${userInfo.id}`); }}
+                      onClick={() => {
+                        router.push(`/profile/professional/${userInfo.id}`);
+                      }}
                       className="cursor-pointer text-md font-semibold text-blue-900 focus:text-blue-950 focus:bg-[#f1e6ff]"
                     >
                       <User className="mr-2 h-12 w-12" />
@@ -395,7 +428,9 @@ const Navbar = () => {
                   )}
                   {userRole === "client" && (
                     <DropdownMenuItem
-                      onClick={() => { router.push(`/profile/${userInfo.id}`); }}
+                      onClick={() => {
+                        router.push(`/profile/${userInfo.id}`);
+                      }}
                       className="cursor-pointer text-md font-semibold text-blue-900 focus:text-blue-950 focus:bg-[#f1e6ff]"
                     >
                       <User className="mr-2 h-12 w-12" />
@@ -404,7 +439,9 @@ const Navbar = () => {
                   )}
 
                   <DropdownMenuItem
-                    onClick={() => { router.push(`/messages`); }}
+                    onClick={() => {
+                      router.push(`/messages`);
+                    }}
                     className="cursor-pointer text-md font-semibold text-blue-900 focus:text-blue-950 focus:bg-[#f1e6ff]"
                   >
                     <MessageSquareDot className="mr-2 h-12 w-12" />
@@ -419,12 +456,11 @@ const Navbar = () => {
                     <LogOut className="mr-2 h-4 w-4" />
                     Sign out
                   </DropdownMenuItem>
-
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
           ) : (
-            <div className="flex items-center gap-3">
+            <div className="hidden md:flex items-center gap-3">
               <SignIn className="text-sm font-medium px-4 py-2 hover:bg-gray-100 rounded-md transition-colors" />
               <Join className="text-sm font-medium px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-md hover:from-blue-600 hover:to-purple-600 transition-colors shadow-sm" />
             </div>
@@ -442,73 +478,116 @@ const Navbar = () => {
 
       {/* Mobile menu */}
       <div
-        className={` md:hidden mt-4 space-y-4 transform transition-all duration-200 origin-top ${mobileOpen
-          ? "opacity-100 scale-100"
-          : "opacity-0 scale-95 h-0 overflow-hidden"
-          } `}
+        className={`md:hidden mt-4 transform transition-all duration-300 ease-out ${
+          mobileOpen
+            ? "opacity-100 scale-100 max-h-[1000px]"
+            : "opacity-0 scale-95 max-h-0 overflow-hidden"
+        }`}
       >
         {/* Nav links */}
-        <nav>
-          <ul className="flex flex-col space-y-2 text-gray-600">
-            <li className="hover:text-gray-900 cursor-pointer">Accueil</li>
+        <nav className="space-y-3 pb-4 border-b border-gray-200">
+          <ul className="flex flex-col space-y-1">
+            <li>
+              <a
+                href="#"
+                className="block px-4 py-3 rounded-lg font-medium text-gray-800 hover:bg-gray-100 active:bg-gray-200 transition-colors"
+                onClick={() => setMobileOpen(false)}
+              >
+                Accueil
+              </a>
+            </li>
 
             {/* Services mobile */}
-            <li ref={servicesRef} className="relative">
+            <li className="relative">
               <button
                 onClick={() => setServicesOpen((o) => !o)}
-                className="flex items-center hover:text-gray-900 cursor-pointer focus:outline-none"
+                className="flex items-center justify-between w-full px-4 py-3 rounded-lg font-medium text-gray-800 hover:bg-gray-100 active:bg-gray-200 transition-colors"
               >
-                Services
-                <ChevronDown className="ml-1" size={16} />
+                <span>Services</span>
+                <ChevronDown
+                  className={`ml-2 transition-transform duration-200 ${
+                    servicesOpen ? "rotate-180" : ""
+                  }`}
+                  size={18}
+                />
               </button>
               <ul
-                className={` pl-4 mt-1 flex flex-col space-y-1 transform transition-all duration-200 origin-top ${servicesOpen
-                  ? "opacity-100 scale-100 pointer-events-auto"
-                  : "opacity-0 scale-95 pointer-events-none"
-                  } transition-all duration-150 origin-top ${servicesOpen ? "block" : "hidden"
-                  }`}
+                className={`pl-4 mt-1 space-y-1 transition-all duration-300 ease-in-out ${
+                  servicesOpen
+                    ? "opacity-100 max-h-[500px]"
+                    : "opacity-0 max-h-0 overflow-hidden"
+                }`}
               >
                 {serviceOptions.map((name) => (
-                  <li
-                    key={name}
-                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer whitespace-nowrap"
-                    onClick={() => {
-                      setServicesOpen(false);
-                      setMobileOpen(false);
-                    }}
-                  >
-                    {name}
+                  <li key={name}>
+                    <a
+                      href="#"
+                      className="block px-4 py-2.5 text-gray-700 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition-colors"
+                      onClick={() => {
+                        setServicesOpen(false);
+                        setMobileOpen(false);
+                      }}
+                    >
+                      {name}
+                    </a>
                   </li>
                 ))}
               </ul>
             </li>
 
-            <li className="hover:text-gray-900 cursor-pointer">À propos</li>
-            <li className="hover:text-gray-900 cursor-pointer">Blog</li>
+            <li>
+              <a
+                href="#"
+                className="block px-4 py-3 rounded-lg font-medium text-gray-800 hover:bg-gray-100 active:bg-gray-200 transition-colors"
+                onClick={() => setMobileOpen(false)}
+              >
+                À propos
+              </a>
+            </li>
+            <li>
+              <a
+                href="#"
+                className="block px-4 py-3 rounded-lg font-medium text-gray-800 hover:bg-gray-100 active:bg-gray-200 transition-colors"
+                onClick={() => setMobileOpen(false)}
+              >
+                Blog
+              </a>
+            </li>
           </ul>
         </nav>
 
         {/* Search mobile */}
-        <div className="relative w-full">
-          <Search
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
-            size={20}
-          />
-          <Input
-            type="text"
-            placeholder="Try ‘Lotus GT 430’"
-            className="pl-12 pr-4 py-2 w-full rounded-full bg-gray-100
-                       focus:bg-white focus:ring-2 focus:ring-indigo-500 transition"
-          />
+        <div className="relative w-full px-2 py-4 border-b border-gray-200">
+          <div className="relative">
+            <Search
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500"
+              size={20}
+            />
+            <Input
+              type="text"
+              placeholder="Try 'Lotus GT 430'"
+              className="pl-12 pr-4 py-3 w-full rounded-full bg-gray-100 border-none
+                   focus:bg-white focus:ring-2 focus:ring-indigo-500 transition
+                   placeholder-gray-500 text-gray-800"
+            />
+          </div>
         </div>
 
         {/* Login mobile */}
-        <Button
-          className="flex w-full justify-center items-center space-x-2 bg-blue-900 hover:bg-blue-950 text-white rounded-full px-6 py-2"
-          onClick={() => setMobileOpen(false)}
-        >
-          <span>Login</span>
-        </Button>
+        <div className="px-4 py-4 md:pt-4 space-y-3">
+          <SignIn
+            className="block w-full text-center font-medium px-4 py-3 
+               text-gray-800 hover:bg-gray-100 rounded-lg 
+               transition-colors active:bg-gray-200 
+               border border-gray-300"
+          />
+          <Join
+            className="block w-full text-center font-medium px-4 py-3 
+               bg-gradient-to-r from-blue-500 to-purple-500 text-white 
+               rounded-lg hover:from-blue-600 hover:to-purple-600 
+               transition-colors shadow-sm active:scale-[0.98]"
+          />
+        </div>
       </div>
     </header>
   );

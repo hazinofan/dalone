@@ -1,6 +1,9 @@
 // pages/index.tsx
 import {
-  ArrowRight, ChevronRight, Palette, Wrench,
+  ArrowRight,
+  ChevronRight,
+  Palette,
+  Wrench,
   Leaf,
   Plug,
   Dumbbell,
@@ -13,7 +16,7 @@ import {
   Layers,
   ShieldCheck,
   MessageCircle,
-  Box
+  Box,
 } from "lucide-react";
 import Head from "next/head";
 import { motion } from "framer-motion";
@@ -37,51 +40,59 @@ export default function Home() {
     { title: "Other Services", icon: <Sparkles className="w-5 h-5" /> },
   ];
 
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
-  const [loading, setLoading] = useState(false)
-  const [proProfils, setProProfils] = useState<any>([])
-  const router = useRouter()
-  const [check, setCheck] = useState(false)
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+  const [loading, setLoading] = useState(false);
+  const [proProfils, setProProfils] = useState<any>([]);
+  const router = useRouter();
+  const [check, setCheck] = useState(false);
 
   const trustedBrands = [
-    { name: "paypal", src: "https://www.urbantool.com/wp-content/uploads/2016/12/paypal-logo-png.png" },
+    {
+      name: "paypal",
+      src: "https://www.urbantool.com/wp-content/uploads/2016/12/paypal-logo-png.png",
+    },
     { name: "meta", src: "/assets/meta.png" },
     { name: "google", src: "/assets/google.png" },
-    { name: "payoneer", src: "https://companieslogo.com/img/orig/PAYO_BIG-aa26e6e0.png?t=1720244493" },
-    { name: "netflix", src: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Netflix_2015_logo.svg/1024px-Netflix_2015_logo.svg.png" },
+    {
+      name: "payoneer",
+      src: "https://companieslogo.com/img/orig/PAYO_BIG-aa26e6e0.png?t=1720244493",
+    },
+    {
+      name: "netflix",
+      src: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Netflix_2015_logo.svg/1024px-Netflix_2015_logo.svg.png",
+    },
     { name: "venmo", src: "/assets/venmo.png" },
   ];
 
   useEffect(() => {
-
     const loadProfessionals = async () => {
-      setLoading(true)
+      setLoading(true);
       try {
-        const res = await findAll()
-        setProProfils(res)
-        console.log(proProfils, ' fetched professionals')
+        const res = await findAll();
+        setProProfils(res);
+        console.log(proProfils, " fetched professionals");
       } catch (error) {
-        console.error(error, 'failed to fetch users')
+        console.error(error, "failed to fetch users");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    loadProfessionals()
-  }, [])
+    loadProfessionals();
+  }, []);
 
   useEffect(() => {
     const getAuthUsers = () => {
-      const authUser = localStorage.getItem('dalone:token')
+      const authUser = localStorage.getItem("dalone:token");
       if (authUser) {
-        setCheck(true)
+        setCheck(true);
       } else {
-        setCheck(false)
+        setCheck(false);
       }
-    }
+    };
 
-    getAuthUsers()
-  },[])
+    getAuthUsers();
+  }, []);
 
   return (
     <>
@@ -91,75 +102,80 @@ export default function Home() {
       </Head>
 
       <main className="min-h-screen flex flex-col">
-
         {/* HERO SECTION */}
-        <section className="relative flex-1 h-[screen] flex items-center justify-center">
+        <section className="relative w-full min-h-screen flex items-center justify-center">
           {/* Background image */}
-          <div className="absolute inset-0 bg-[url('/assets/professionall.png')] bg-cover bg-center" />
+          <div className="absolute inset-0 bg-[url('/assets/professionall.png')] bg-cover bg-center bg-no-repeat" />
 
           {/* Gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/70" />
 
           {/* Content */}
-          <div className="relative z-10 h-screen py-48 w-full px-6 sm:px-8 md:px-12 lg:px-24 mx-auto">
-            <div className="text-center md:text-left">
-              <motion.h1
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                className="text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-tight mb-6"
-              >
-                <span className="block text-6xl">Our Professionals</span>
-                <span className="text-transparent text-7xl bg-clip-text bg-gradient-to-r from-blue-400 to-orange-500">
-                  Will take it from here
-                </span>
-              </motion.h1>
+          <div className="relative z-10 w-full h-full py-28 md:py-24 lg:py-32 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24 flex flex-col justify-center">
+            <div className="container mx-auto">
+              <div className="text-center md:text-left">
+                <motion.h1
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                  className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-4 md:mb-6"
+                >
+                  <span className="block text-4xl sm:text-5xl md:text-6xl lg:text-7xl">
+                    Our Professionals
+                  </span>
+                  <span className="text-transparent text-4xl sm:text-5xl md:text-6xl lg:text-7xl bg-clip-text bg-gradient-to-r from-blue-400 to-orange-500">
+                    Will take it from here
+                  </span>
+                </motion.h1>
 
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.1 }}
-                className="text-lg md:text-xl text-white/90 max-w-2xl mx-auto md:mx-0 mb-8"
-              >
-                Connecting you with top-tier professionals for all your needs. Quality service guaranteed.
-              </motion.p>
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.1 }}
+                  className="text-base sm:text-lg md:text-xl text-white/90 max-w-2xl mx-auto md:mx-0 mb-6 md:mb-8"
+                >
+                  Connecting you with top-tier professionals for all your needs.
+                  Quality service guaranteed.
+                </motion.p>
 
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto md:mx-0"
-              >
-                {cardItems.map((item, i) => (
-                  <motion.div
-                    key={i}
-                    whileHover={{ y: -3 }}
-                    className="
-                      group flex items-center justify-between
-                      w-full p-4 text-base md:text-lg
-                      border border-white/30 rounded-xl
-                      bg-white/5 text-white backdrop-blur-sm
-                      hover:bg-white/10 hover:border-white/50 transition-all
-                    "
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-xl">{item.icon}</span>
-                      <span>{item.title}</span>
-                    </div>
-                    <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                  </motion.div>
-                ))}
-              </motion.div>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 max-w-4xl mx-auto md:mx-0"
+                >
+                  {cardItems.map((item, i) => (
+                    <motion.div
+                      key={i}
+                      whileHover={{ y: -3 }}
+                      className="
+                group flex items-center justify-between
+                w-full p-3 sm:p-4 text-sm sm:text-base md:text-lg
+                border border-white/30 rounded-lg sm:rounded-xl
+                bg-white/5 text-white backdrop-blur-sm
+                hover:bg-white/10 hover:border-white/50 transition-all
+              "
+                    >
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <span className="text-lg sm:text-xl">{item.icon}</span>
+                        <span>{item.title}</span>
+                      </div>
+                      <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </div>
             </div>
           </div>
+
           <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10">
             <motion.div
               animate={{ y: [0, 10, 0] }}
               transition={{ repeat: Infinity, duration: 1.5 }}
               className="text-white flex flex-col items-center"
             >
-              <span className="text-sm mb-1">Scroll down</span>
-              <ArrowRight className="w-5 h-5 rotate-90" />
+              <span className="text-xs sm:text-sm mb-1">Scroll down</span>
+              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 rotate-90" />
             </motion.div>
           </div>
         </section>
@@ -180,7 +196,8 @@ export default function Home() {
                 </h2>
               </div>
               <p className="text-gray-500 max-w-2xl mx-auto">
-                We're proud to serve some of the most innovative organizations in the world
+                We're proud to serve some of the most innovative organizations
+                in the world
               </p>
             </motion.div>
 
@@ -224,12 +241,15 @@ export default function Home() {
               </span>
 
               <h2 className="text-4xl sm:text-5xl font-bold leading-tight">
-                Your Go-To Platform for <span className="text-blue-800">Quality</span> Services
+                Your Go-To Platform for{" "}
+                <span className="text-blue-800">Quality</span> Services
               </h2>
 
               <p className="text-lg text-gray-600 leading-relaxed">
-                DALONE connects you with trusted professionals across various industries. Whether it's an urgent need or a scheduled appointment,
-                we've built a platform that's fast, secure, and tailored to your lifestyle.
+                DALONE connects you with trusted professionals across various
+                industries. Whether it's an urgent need or a scheduled
+                appointment, we've built a platform that's fast, secure, and
+                tailored to your lifestyle.
               </p>
 
               <div className="flex gap-4">
@@ -250,9 +270,12 @@ export default function Home() {
                 <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center mb-4">
                   <ShieldCheck size={24} className="text-blue-800" />
                 </div>
-                <h3 className="font-semibold text-lg mb-2">Verified Professionals</h3>
+                <h3 className="font-semibold text-lg mb-2">
+                  Verified Professionals
+                </h3>
                 <p className="text-gray-800 text-sm leading-relaxed">
-                  Every service provider on DALONE is verified and rated by the community for quality and trust.
+                  Every service provider on DALONE is verified and rated by the
+                  community for quality and trust.
                 </p>
               </div>
 
@@ -261,9 +284,12 @@ export default function Home() {
                 <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center mb-4">
                   <Layers size={24} className="text-blue-800" />
                 </div>
-                <h3 className="font-semibold text-lg mb-2">Wide Range of Services</h3>
+                <h3 className="font-semibold text-lg mb-2">
+                  Wide Range of Services
+                </h3>
                 <p className="text-gray-800 text-sm leading-relaxed">
-                  From home repairs to beauty and wellness, DALONE offers everything you need in one place.
+                  From home repairs to beauty and wellness, DALONE offers
+                  everything you need in one place.
                 </p>
               </div>
 
@@ -274,7 +300,8 @@ export default function Home() {
                 </div>
                 <h3 className="font-semibold text-lg mb-2">Flexible Booking</h3>
                 <p className="text-gray-800 text-sm leading-relaxed">
-                  Book instantly or schedule at your convenience. DALONE adapts to your time.
+                  Book instantly or schedule at your convenience. DALONE adapts
+                  to your time.
                 </p>
               </div>
 
@@ -283,15 +310,17 @@ export default function Home() {
                 <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center mb-4">
                   <Headset size={24} className="text-blue-800" />
                 </div>
-                <h3 className="font-semibold text-lg mb-2">Dedicated Support</h3>
+                <h3 className="font-semibold text-lg mb-2">
+                  Dedicated Support
+                </h3>
                 <p className="text-gray-800 text-sm leading-relaxed">
-                  Need help? Our team is here to assist before, during, and after every booking.
+                  Need help? Our team is here to assist before, during, and
+                  after every booking.
                 </p>
               </div>
             </div>
           </div>
         </section>
-
 
         {/* Services Section */}
         <section className="h-80  mt-10 mb-28">
@@ -302,20 +331,21 @@ export default function Home() {
         {/* Video presentation section */}
         <section className="bg-[url('/assets/hero-bg.png')] bg-cover bg-center text-white rounded-3xl my-12 px-4 py-16 sm:px-6 md:px-10 lg:px-16 xl:mx-32 ">
           <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-
             {/* Left Column */}
             <div className="space-y-6 text-center lg:text-left">
               <h3 className="text-xl font-bold">DALONE</h3>
 
               <h1 className="text-4xl sm:text-5xl lg:text-6xl leading-tight font-extrabold">
-                Instant results.<br />
+                Instant results.
+                <br />
                 Top talent.
               </h1>
 
               <p className="text-md sm:text-lg lg:text-xl max-w-xl mx-auto lg:mx-0">
-                Find the right professional instantly on DALONE. Whether you need a service now or prefer to schedule ahead,
-                browse verified profiles, book in a few clicks, and get the job done. And if anything needs adjusting, your expert
-                is always ready to help.
+                Find the right professional instantly on DALONE. Whether you
+                need a service now or prefer to schedule ahead, browse verified
+                profiles, book in a few clicks, and get the job done. And if
+                anything needs adjusting, your expert is always ready to help.
               </p>
 
               <button className="inline-block bg-white text-black font-medium py-3 px-8 rounded-lg hover:bg-gray-100 transition">
@@ -353,16 +383,23 @@ export default function Home() {
           </div>
         ) : (
           <section>
-
             <div className="mx-32">
               <h1 className="text-4xl mb-10">Explore Professionals:</h1>
 
               <div className="flex flex-row gap-8 overflow-x-auto pb-4 scrollbar-hide">
                 {/* Card Container */}
                 {proProfils.slice(0, 12).map((p: any, index: any) => (
-                  <div key={index} className="rounded-2xl p-4 text-center max-w-xs duration-300">
+                  <div
+                    key={index}
+                    className="rounded-2xl p-4 text-center max-w-xs duration-300"
+                  >
                     {/* Image */}
-                    <div className="relative overflow-hidden cursor-pointer rounded-2xl group" onClick={() => router.push(`/profile/professional/${p.user?.id}`)}>
+                    <div
+                      className="relative overflow-hidden cursor-pointer rounded-2xl group"
+                      onClick={() =>
+                        router.push(`/profile/professional/${p.user?.id}`)
+                      }
+                    >
                       <img
                         src={`${API_BASE_URL}${p?.heroImage}`}
                         alt="Professional work card"
@@ -382,7 +419,9 @@ export default function Home() {
                             className="rounded-full border-2 border-white shadow-sm"
                           />
                         </div>
-                        <p className="text-gray-800 font-medium">@{p?.username}</p>
+                        <p className="text-gray-800 font-medium">
+                          @{p?.username}
+                        </p>
                       </div>
 
                       {/* Meta info (orders, likes, etc.) */}
@@ -396,7 +435,10 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-              <p className=" text-md text-blue-800 hover:underline transition-all cursor-pointer justify-self-center mt-5"> See more ... </p>
+              <p className=" text-md text-blue-800 hover:underline transition-all cursor-pointer justify-self-center mt-5">
+                {" "}
+                See more ...{" "}
+              </p>
             </div>
           </section>
         )}
@@ -404,10 +446,12 @@ export default function Home() {
         <section className="max-w-7xl mx-auto px-6 py-16">
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
-              Make it all happen with <span className="text-indigo-600">Professionals</span>
+              Make it all happen with{" "}
+              <span className="text-indigo-600">Professionals</span>
             </h1>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Connect with skilled professionals ready to bring your projects to life
+              Connect with skilled professionals ready to bring your projects to
+              life
             </p>
           </div>
 
@@ -415,9 +459,16 @@ export default function Home() {
             {/* Feature 1 */}
             <div className=" p-6 rounded-xl transition-all duration-300 flex flex-col items-center text-center">
               <div className="flex items-center justify-center mb-4">
-                <img src="/assets/logo1.png" alt="Professionals icon" width={100} height={100} />
+                <img
+                  src="/assets/logo1.png"
+                  alt="Professionals icon"
+                  width={100}
+                  height={100}
+                />
               </div>
-              <h3 className="text-lg font-semibold text-blue-800 mb-2">Diverse Talent Pool</h3>
+              <h3 className="text-lg font-semibold text-blue-800 mb-2">
+                Diverse Talent Pool
+              </h3>
               <p className="text-gray-600 text-sm">
                 Access a pool of top professionals across 700+ categories
               </p>
@@ -426,9 +477,16 @@ export default function Home() {
             {/* Feature 2 */}
             <div className=" p-6 rounded-xl transition-all duration-300 flex flex-col items-center text-center">
               <div className="flex items-center justify-center mb-4">
-                <img src="/assets/verified.png" alt="Professionals icon" width={100} height={100} />
+                <img
+                  src="/assets/verified.png"
+                  alt="Professionals icon"
+                  width={100}
+                  height={100}
+                />
               </div>
-              <h3 className="text-lg font-semibold text-blue-800 mb-2">Verified Experts </h3>
+              <h3 className="text-lg font-semibold text-blue-800 mb-2">
+                Verified Experts{" "}
+              </h3>
               <p className="text-gray-600 text-sm">
                 All professionals are vetted for quality and expertise
               </p>
@@ -437,9 +495,16 @@ export default function Home() {
             {/* Feature 3 */}
             <div className=" p-6 rounded-xl transition-all duration-300 flex flex-col items-center text-center">
               <div className="flex items-center justify-center mb-4">
-                <img src="/assets/matching.png" alt="Professionals icon" width={100} height={100} />
+                <img
+                  src="/assets/matching.png"
+                  alt="Professionals icon"
+                  width={100}
+                  height={100}
+                />
               </div>
-              <h3 className="text-lg font-semibold text-blue-800 mb-2">Quick Matching </h3>
+              <h3 className="text-lg font-semibold text-blue-800 mb-2">
+                Quick Matching{" "}
+              </h3>
               <p className="text-gray-600 text-sm">
                 Find the right professional for your project in minutes
               </p>
@@ -448,9 +513,17 @@ export default function Home() {
             {/* Feature 4 */}
             <div className=" p-6 rounded-xl transition-all duration-300 flex flex-col items-center text-center">
               <div className="flex items-center justify-center mb-4">
-                <img src="/assets/support.png" alt="Professionals icon" width={100} height={100} />
+                <img
+                  src="/assets/support.png"
+                  alt="Professionals icon"
+                  width={100}
+                  height={100}
+                />
               </div>
-              <h3 className="text-lg font-semibold text-blue-800 mb-2"> Dedicated Support </h3>
+              <h3 className="text-lg font-semibold text-blue-800 mb-2">
+                {" "}
+                Dedicated Support{" "}
+              </h3>
               <p className="text-gray-600 text-sm">
                 24/7 assistance throughout your project journey
               </p>
@@ -497,7 +570,10 @@ export default function Home() {
               </p>
             </div>
           </div> */}
-          <h1 className=" text-3xl text-gray-700 mb-10"> How to book a Professional :</h1>
+          <h1 className=" text-3xl text-gray-700 mb-10">
+            {" "}
+            How to book a Professional :
+          </h1>
           <video
             src="/assets/howToOrder.mp4"
             autoPlay
@@ -509,30 +585,30 @@ export default function Home() {
         </section>
 
         {!check ? (
-        <section
-          className="relative h-96 bg-cover bg-center flex items-center justify-center mx-20 rounded-3xl"
-          style={{ backgroundImage: "url('/assets/CTA.png')" }}
-        >
-
-          {/* Content */}
-          <div className="relative z-10 text-center px-36">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl mx-10 mb-4">
-              <span className="text-black"> Join 10k+ of Professionals <br /> And <br /> start making more profits</span>
-            </h2>
-            <div className="flex mt-10 flex-col sm:flex-row gap-4 justify-center">
-              <button className="px-6 py-3 bg-blue-950 text-white rounded-full hover:bg-[#24246a] transition">
-                Sign In
-              </button>
-              <button className="px-6 py-3 border border-black text-black rounded-full hover:bg-white hover:text-blue-900 transition">
-                Brows Professionals
-              </button>
+          <section
+            className="relative h-96 bg-cover bg-center flex items-center justify-center mx-20 rounded-3xl"
+            style={{ backgroundImage: "url('/assets/CTA.png')" }}
+          >
+            {/* Content */}
+            <div className="relative z-10 text-center md:px-36">
+              <h2 className="text-3xl md:text-4xl lg:text-5xl mx-10 mb-4">
+                <span className="text-black">
+                  {" "}
+                  Join 10k+ of Professionals <br /> And <br /> start making more
+                  profits
+                </span>
+              </h2>
+              <div className="flex mt-10 flex-col sm:flex-row gap-4 justify-center">
+                {/* <button className="px-6 py-3 bg-blue-950 text-white rounded-full hover:bg-[#24246a] transition">
+                  Sign In
+                </button> */}
+                <button className="px-6 py-3 border border-black text-black rounded-full hover:bg-white hover:text-blue-900 transition">
+                  Brows Professionals
+                </button>
+              </div>
             </div>
-          </div>
-        </section>
-
-        ) : (
-          null
-        )}
+          </section>
+        ) : null}
       </main>
     </>
   );
