@@ -25,12 +25,13 @@ interface SignInProps {
 }
 
 export function SignIn({ className }: SignInProps) {
-  const router = useRouter()
-  const [open, setOpen] = useState(false)
-  const { toast } = useToast()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const { toast } = useToast();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL;
 
   function handleAuthSuccess(payload: {
     access_token: string;
@@ -59,7 +60,7 @@ export function SignIn({ className }: SignInProps) {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const res = await fetch("http://localhost:3001/auth/login", {
+      const res = await fetch(`${BACKEND_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -77,13 +78,13 @@ export function SignIn({ className }: SignInProps) {
 
       localStorage.setItem("dalone:token", access_token);
       setOpen(false);
-      window.location.reload()
+      window.location.reload();
     } catch (err) {
       console.error(err);
       toast({
         title: "Error while authentificating !",
         description: String(err),
-      })
+      });
     } finally {
       setIsLoading(false);
     }
@@ -135,17 +136,14 @@ export function SignIn({ className }: SignInProps) {
             <h1 className="text-3xl md:text-4xl text-blue-950 font-semibold pt-6 mb-5 self-center">
               DALONE
             </h1>
-            
+
             <DialogHeader>
               <DialogTitle className="text-2xl self-center">
                 Sign in to your account
               </DialogTitle>
               <DialogDescription className="mb-6 self-center">
                 Don't have an account?{" "}
-                <a
-                  href="/register"
-                  className="text-blue-900 hover:underline"
-                >
+                <a href="/register" className="text-blue-900 hover:underline">
                   Join here
                 </a>
               </DialogDescription>

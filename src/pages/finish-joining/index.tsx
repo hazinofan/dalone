@@ -97,6 +97,8 @@ export default function FinishSignup() {
   const [country, setCountry] = useState("");
   const [userInfo, setUserInfo] = useState<UserProfile | null>(null);
   const [city, setCity] = useState("");
+    const API_BASE_URL =
+    process.env.NEXT_PUBLIC_API_URL ;
   const [otherOccupation, setOtherOccupation] = useState<string>("");
   const [skills, setSkills] = useState<Skill[]>([""]);
   const [languages, setLanguages] = useState<Language[]>([
@@ -144,7 +146,7 @@ export default function FinishSignup() {
 
     const validate = async () => {
       try {
-        const res = await fetch("http://localhost:3001/users/me", {
+        const res = await fetch(`${API_BASE_URL}/users/me`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error("Not authorized");
@@ -176,7 +178,7 @@ export default function FinishSignup() {
     if (!selectedRole || !token || userId === null) return;
 
     // 1) Patch our role on the server
-    await fetch(`http://localhost:3001/users/${userId}/role`, {
+    await fetch(`${API_BASE_URL}/users/${userId}/role`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -185,7 +187,7 @@ export default function FinishSignup() {
       body: JSON.stringify({ role: selectedRole }),
     });
 
-    const refreshRes = await fetch("http://localhost:3001/auth/refresh-token", {
+    const refreshRes = await fetch(`${API_BASE_URL}/auth/refresh-token`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -230,7 +232,7 @@ export default function FinishSignup() {
   useEffect(() => {
     if (!token) return;
     (async () => {
-      const res = await fetch("http://localhost:3001/users/me", {
+      const res = await fetch(`${API_BASE_URL}/users/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) {
@@ -284,7 +286,7 @@ export default function FinishSignup() {
           description,
           phoneNumber,
         };
-        await fetch("http://localhost:3001/client-profile", {
+        await fetch(`${API_BASE_URL}/client-profile`, {
           method: "POST",
           headers,
           body: JSON.stringify(clientPayload),
@@ -311,7 +313,7 @@ export default function FinishSignup() {
           phoneNumber,
         };
 
-        await fetch("http://localhost:3001/professional-profile/me", {
+        await fetch(`${API_BASE_URL}/professional-profile/me`, {
           method: "POST",
           headers,
           body: JSON.stringify(payload),

@@ -1,7 +1,7 @@
 // src/core/services/reviews.services.ts
 import axios from 'axios';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ;
 const REVIEWS_URL = `${BASE_URL}/reviews`;
 
 export interface Review {

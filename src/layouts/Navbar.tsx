@@ -46,7 +46,7 @@ const Navbar = () => {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const API_BASE_URL =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+    process.env.NEXT_PUBLIC_API_URL ;
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   const serviceOptions = ["Coiffure", "Plomberie", "Électricité", "Jardinage"];
@@ -59,7 +59,7 @@ const Navbar = () => {
     }
     try {
       // 1) Get “me” (to know user.id and user.role)
-      const meRes = await fetch("http://localhost:3001/users/me", {
+      const meRes = await fetch(`${API_BASE_URL}/users/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!meRes.ok) throw new Error("Not authenticated");
@@ -109,7 +109,7 @@ const Navbar = () => {
     const token = localStorage.getItem("dalone:token");
     if (!token) return;
 
-    fetch("http://localhost:3001/users/me", {
+    fetch(`${API_BASE_URL}/users/me`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => {

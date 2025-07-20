@@ -126,7 +126,7 @@ const Index = () => {
     const [selectedWork, setSelectedWork] = useState<any>(null);
     const { toast } = useToast()
     const [workDescription, setWorkDescription] = useState("")
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
     const [underlineStyle, setUnderlineStyle] = useState({
         left: 0,
         width: 0,
@@ -149,7 +149,7 @@ const Index = () => {
         console.log("🔑 token from localStorage:", token);
         if (!token) return;
 
-        fetch("http://localhost:3001/users/me", {
+        fetch(`${API_BASE_URL}/users/me`, {
             headers: { Authorization: `Bearer ${token}` },
         })
             .then((res) => {
@@ -310,7 +310,7 @@ const Index = () => {
             setLoading(true);
             try {
                 // 1) fetch the user + nested professionalProfile
-                const userRes = await fetch(`http://localhost:3001/users/${id}`);
+                const userRes = await fetch(`${API_BASE_URL}/users/${id}`);
                 if (!userRes.ok) throw new Error("Failed to load user");
                 const userData = await userRes.json();
                 console.log(userData, 'data bb')
@@ -321,14 +321,14 @@ const Index = () => {
                 setUserAvatar(userData.professionalProfile.avatar)
 
                 // 2) fetch gigs for this professional
-                const gigsRes = await fetch(`http://localhost:3001/gigs?professionalId=${id}`);
+                const gigsRes = await fetch(`${API_BASE_URL}/gigs?professionalId=${id}`);
                 if (gigsRes.ok) {
                     const gigs = await gigsRes.json();
                     setGigsCount(Array.isArray(gigs) ? gigs.length : 0);
                 }
 
                 // 3) fetch works (assuming you have an endpoint)
-                const worksRes = await fetch(`http://localhost:3001/works?professionalId=${id}`);
+                const worksRes = await fetch(`${API_BASE_URL}/works?professionalId=${id}`);
                 if (worksRes.ok) {
                     const works = await worksRes.json();
                     setWorksCount(Array.isArray(works) ? works.length : 0);

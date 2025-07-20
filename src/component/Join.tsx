@@ -27,6 +27,7 @@ export function Join({ className }: JoiningProps) {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+    const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL
 
   function handleAuthSuccess(payload: {
     access_token: string;
@@ -51,7 +52,7 @@ export function Join({ className }: JoiningProps) {
 
   const handleSignUp = async () => {
     try {
-      const res = await fetch("http://localhost:3001/auth/register", {
+      const res = await fetch(`${BACKEND_URL}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),

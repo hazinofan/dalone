@@ -4,12 +4,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
 export function FileUploadField({
-  onFileSelected,       // now will receive the **URL** of the uploaded image
+  onFileSelected,       
 }: {
   onFileSelected: (url: string) => void
 }) {
   const [fileName, setFileName] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
+  const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL
 
   const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -29,7 +30,7 @@ export function FileUploadField({
     formData.append("avatar", file)
 
     try {
-      const res = await fetch("http://localhost:3001/upload/avatar", {
+      const res = await fetch(`${BACKEND_URL}/upload/avatar`, {
         method: "POST",
         body: formData,
       })

@@ -10,7 +10,7 @@ export default function GigDetailsPage() {
   const { id, gigId } = router.query;
 
   const [gig, setGig] = useState<Gig | null>(null);
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ;
   const [loadingData, setLoadingData] = useState(false);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -56,7 +56,7 @@ export default function GigDetailsPage() {
       setLoading(true);
       try {
         // 1) fetch the user + nested professionalProfile
-        const userRes = await fetch(`http://localhost:3001/users/${id}`);
+        const userRes = await fetch(`${API_BASE_URL}/users/${id}`);
         if (!userRes.ok) throw new Error("Failed to load user");
         const userData = await userRes.json();
         console.log(userData, 'data bb')

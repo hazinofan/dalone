@@ -1,6 +1,6 @@
 // src/core/services/users.service.ts
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ;
 
 // Helper to read token & build auth headers
 function getAuthHeaders(): Record<string, string> {

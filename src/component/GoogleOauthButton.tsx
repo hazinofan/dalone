@@ -1,6 +1,6 @@
 // components/GoogleButton.tsx
-import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/router';
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/router";
 
 declare global {
   interface Window {
@@ -32,10 +32,11 @@ export function GoogleButton({ onLoginSuccess }: GoogleButtonProps) {
   const router = useRouter();
   const container = useRef<HTMLDivElement>(null);
   const [rendered, setRendered] = useState(false);
+  const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL;
 
   useEffect(() => {
     // Guard: only run once, and only when `window.google` is loaded
-    if (rendered || typeof window === 'undefined' || !window.google) return;
+    if (rendered || typeof window === "undefined" || !window.google) return;
     if (!container.current) return;
 
     // 1) Initialize the Google Identity services library
@@ -44,18 +45,18 @@ export function GoogleButton({ onLoginSuccess }: GoogleButtonProps) {
       callback: async (resp: { credential: string }) => {
         const idToken = resp.credential;
         try {
-          const r = await fetch('http://localhost:3001/auth/google', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+          const r = await fetch(`${BACKEND_URL}/auth/google`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ idToken }),
           });
 
-          console.log('[back] status:', r.status);
+          console.log("[back] status:", r.status);
           const data: GoogleAuthResponse = await r.json();
-          console.log('[back] json:', data);
+          console.log("[back] json:", data);
 
           if (!r.ok) {
-            throw new Error((data as any).message || 'Error from backend');
+            throw new Error((data as any).message || "Error from backend");
           }
 
           // 2) Instead of doing router.push here, call onLoginSuccess:
@@ -65,21 +66,26 @@ export function GoogleButton({ onLoginSuccess }: GoogleButtonProps) {
             isNew: data.isNew,
           });
         } catch (err) {
-          console.error('Google login failed:', err);
-          alert('Google login failed: ' + (err as Error).message);
+          console.error("Google login failed:", err);
+          alert("Google login failed: " + (err as Error).message);
         }
       },
     });
 
     // 3) Render the official “Sign in with Google” button into our container
     window.google.accounts.id.renderButton(container.current, {
-      theme: 'outline',
-      size: 'large',
-      width: '100%',
+      theme: "outline",
+      size: "large",
+      width: "100%",
     });
 
     setRendered(true);
   }, [rendered, onLoginSuccess, router]);
 
-  return <div ref={container} style={{ width: '100%', marginTop: 16, borderRadius: '10px' }} />;
+  return (
+    <div
+      ref={container}
+      style={{ width: "100%", marginTop: 16, borderRadius: "10px" }}
+    />
+  );
 }
